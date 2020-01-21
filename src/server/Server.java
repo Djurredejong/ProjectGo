@@ -15,7 +15,7 @@ public class Server implements Runnable {
 	/** The ServerSocket of this Server */
 	private ServerSocket ssock;
 
-	/** List of ClientHandlers, one for each connected client */
+	/** List of ClientHandlers, one for each connected client changechange */
 	private List<ClientHandler> clients;
 
 	/** Next client number, increasing for every new connection */
