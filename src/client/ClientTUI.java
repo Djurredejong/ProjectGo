@@ -1,12 +1,13 @@
 package client;
 
-
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+
+import exceptions.ExitProgram;
+import exceptions.ServerUnavailableException;
 
 public class ClientTUI {
 
@@ -34,7 +35,7 @@ public class ClientTUI {
 			showMessage("IO ERROR IN START METHOD OF HOTELCLIENTTUI");
 		}
 		catch (ExitProgram exc) {
-			hotelClient.sendExit();
+			client.sendExit();
 		}
 	}
 
