@@ -24,8 +24,11 @@ public class ClientHandler implements Runnable {
 	/** The connected Server */
 	private Server srv;
 
-	/** Name of this ClientHandler */
+	/** Name of this ClientHandler and getter*/
 	private String name;
+	public String getName() {
+		return this.name;
+	}
 
 
 	/**
@@ -54,71 +57,99 @@ public class ClientHandler implements Runnable {
 	 */
 	public void run() {
 		String msg;
-		assignToGame();
 		try {
-			msg = in.readLine();
-			while (msg != null) {
-				System.out.println("> [" + name + "] Incoming: " + msg);
-				handleCommand(msg);
-				out.newLine();
-				out.flush();
+			try {
 				msg = in.readLine();
+				while (msg != null) {
+					System.out.println("> [" + name + "] Incoming: " + msg);
+					handleCommand(msg);
+					out.newLine();
+					out.flush();
+					msg = in.readLine();
+				}
+				System.out.println("Shutting down");
+				shutdown();
 			}
-			System.out.println("Shutting down");
-			shutdown();
+			catch (ProtocolException e) {
+				//in case of a ProtocolException, disconnect the client
+				out.write(ProtocolMessages.INVALID + ProtocolMessages.DELIMITER 
+						+ "You did not adhere to the protocol, goodbye!");
+				System.out.println(name + " did not adhere to the protocol, I will isconnect " + name);
+				shutdown();
+			}
 		} catch (IOException e) {
+			//This happens purposely...?
 			System.out.println("Goodbye!");
 			shutdown();
-		}
+		} 
 	}
 
-	/**
-	 * Assigns the player represented by this ClientHandler to a game.
-	 * Creates a new Game if there is no free game available.
-	 */
-	private void assignToGame() {
-		if (!checkFreeGame()) {
-			srv.getGames().add(new Game());
-		}
-		
-	}
-
-	/**
-	 * Checks if there is a game with only one player that can hence be joined.
-	 */
-	private boolean checkFreeGame() {
-		for (Game game : srv.getGames()) {
-			if (game.isFree()) {
-				return true;
-			}
-		}
-	}
 
 	/**
 	 * Handles commands received from the client by calling the according 
 	 * methods via the Server.
 	 * 
 	 * @param msg Message from client
+	 * @throws ProtocolException 
 	 */
-	private void handleCommand(String msg) throws IOException {
-		//do sth with msg
-	}
-	
-	
-	/**
-	 * Getter for inGame.
-	 * Called by the method Game
-	 * 
-	 * @return inGame (true if player represented by this Handler is assigned to a game)
-	 */
-	public boolean isInGame() {
-		return inGame;
+	private void handleCommand(String msg) throws IOException, ProtocolException {
+
+		//as soon as the handshake has been received,
+		//the client should not send it again
+		boolean handshakeReceived = false;
+		//if the received message is the handshake
+		if (msg.charAt(0) == ProtocolMessages.HANDSHAKE) {
+			if (handshakeReceived == true) {
+				throw new ProtocolException("You've already shook my hand!");
+			}
+			else {
+				out.write(srv.getHello());
+				handshakeReceived = true;
+			}
+		}
+
+		//if the received message is a turn
+		else if (msg.charAt(0) == ProtocolMessages.TURN) {
+			String[] msgSplit = msg.split(ProtocolMessages.DELIMITER);
+			if (msgSplit.length > 1 && msgSplit[1] != null) {
+				if (checkValidBoard(msgSplit[1])) {
+					out.write(srv.doMove(msgSplit[1]));
+				}
+				else {
+					throw new ProtocolException("You did not send me a correct board representation!");
+				}
+			}
+			else {
+				throw new ProtocolException("You did not send me a board!");
+			}					
+		}
+
+		//apparently, the received message does not correspond to the protocol
+		else {
+
+		}		
 	}
 
-	public void setInGame(boolean inGame) {
-		this.inGame = inGame;
+	/**
+	 * Check whether a String represents a possible board situation
+	 * 
+	 * @param board The String to be checked
+	 * @return true if board represents a possible board situation
+	 */
+	private boolean checkValidBoard(String board) {
+		if (board.length() != srv.getBoardSize()) {
+			return false;
+		}
+		for (int i = 0; i < board.length(); i++) {
+			if (board.charAt(i) != ProtocolMessages.BLACK ||
+					board.charAt(i) != ProtocolMessages.WHITE ||
+					board.charAt(i) != ProtocolMessages.UNOCCUPIED) {
+				return false;
+			}
+		}
+		return true;
 	}
-	
+
 
 	/**
 	 * Shut down the connection to this client by closing the socket and 

@@ -15,7 +15,7 @@ public class Server implements Runnable {
 	/** The ServerSocket of this Server */
 	private ServerSocket ssock;
 
-	/** List of ClientHandlers, one for each connected client changechange */
+	/** List of ClientHandlers, one for each connected client */
 	private List<ClientHandler> clients;
 
 	/** Next client number, increasing for every new connection */
@@ -24,11 +24,17 @@ public class Server implements Runnable {
 	/** The view of this HotelServer */
 	private ServerTUI view;
 
-	/** The size of the board */
+	/** The size of the board and getter method for it */
 	private int boardSize;
+	public int getBoardSize() {
+		return boardSize;
+	}
 
-	/** List of Games */
+	/** List of Games and getter method for it*/
 	private List<Game> games;
+	public List<Game> getGames() {
+		return games;
+	}
 
 	/**
 	 * Constructs a new Server. Initialises the clients list, 
@@ -63,10 +69,11 @@ public class Server implements Runnable {
 					ClientHandler handler = new ClientHandler(sock, this, clientName);
 					new Thread(handler).start();
 					clients.add(handler);
-				
+
+					//TODO look in list of clients if there are two connected clients not yet in a game
 					if (secondPlayer) {
 						//two players have connected, start a new Game!
-						games.add(new Game(clients.get(next_client_no - 1), clients.get(next_client_no), boardSize));					
+						games.add(new Game(clients.get(next_client_no - 3), clients.get(next_client_no - 2), boardSize));					
 					}
 				}
 			} catch (ExitProgram ep) {
@@ -92,8 +99,15 @@ public class Server implements Runnable {
 	 */
 	public void setup() throws ExitProgram {			
 		//determine the board size for the games to be played on this Server
-		boardSize = view.getInt("What should be the board size for the games to be played on this Server?");
+		
+		//boardSize = view.getInt("What should be the board size for the games played on this Server?");
+		boardSize = 5;
+		view.showMessage("The board size is: " + boardSize 
+				+ " x " + boardSize + ", let's see who wants to play!");
 
+//		view.showMessage("The board size is: " + boardSize 
+//				+ " x " + boardSize + ", let's see who wants to play!");
+		
 		ssock = null;
 		while (ssock == null) {
 			//int port = view.getInt("Please enter the server port.");
@@ -128,32 +142,13 @@ public class Server implements Runnable {
 	public void removeGame(Game game) {
 		this.games.remove(game);
 	}
-	
-	/**
-	 * Getter method for the list of games.
-	 * Called by ClientHandler
-	 * 
-	 * @return List of games
-	 */
-	public List<Game> getGames() {
-		return games;
-	}
+
 
 	/**
-	 * Getter method for the board size.
-	 * Called by Client
-	 * Called by Game
+	 * Provides the protocol-defined handshake the Server should give
 	 * 
-	 * @return board size
+	 * @return server handshake
 	 */
-	public int getBoardSize() {
-		return boardSize;
-	}
-
-
-
-	// ------------------ Server Methods --------------------------
-
 	public String getHello() {
 		return ProtocolMessages.HANDSHAKE + ProtocolMessages.DELIMITER + "version" + ProtocolMessages.DELIMITER;
 	}
@@ -163,9 +158,6 @@ public class Server implements Runnable {
 	}
 
 
-
-	// ------------------ Main --------------------------
-
 	/** 
 	 * Start a new Server 
 	 */
@@ -174,8 +166,6 @@ public class Server implements Runnable {
 		System.out.println("This Server will let you play Go. Starting...");
 		new Thread(server).start();
 	}
-
-
 
 }
 

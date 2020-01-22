@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Scanner;
+//import java.util.Scanner;
 
 import exceptions.ExitProgram;
 import exceptions.ProtocolException;
@@ -17,11 +17,11 @@ import protocol.ProtocolMessages;
 
 public class Client {
 
-	private Socket serverSock;
+	private Socket sock;
 	private BufferedReader in;
 	private BufferedWriter out;
 	private ClientTUI view;
-	private String name;
+	private String myName;
 
 	/**
 	 * Constructs a new Client. Initialises the view.
@@ -46,7 +46,7 @@ public class Client {
 			this.handleHello();
 			view.start();
 		} catch (ExitProgram | ServerUnavailableException | ProtocolException e) {
-			view.showMessage("ERROR: " + e + " in HotelClient.start()");
+			view.showMessage(e + " in Client.start()");
 			e.printStackTrace();
 		} 
 	}
@@ -65,9 +65,9 @@ public class Client {
 	 */
 	public void createConnection() throws ExitProgram {
 		clearConnection();
-		while (serverSock == null) {
-			//name = view.getString("Please enter your name");
-			name = "speler";
+		while (sock == null) {
+			//myName = view.getString("Please enter your name");
+			myName = "speler";
 			//String host = String.valueOf(view.getIp());
 			String host = "127.0.0.1";
 			//int port = view.getInt("Please enter a port number");
@@ -78,11 +78,11 @@ public class Client {
 				InetAddress addr = InetAddress.getByName(host);
 				view.showMessage("Attempting to connect to " + addr + ":" 
 						+ port + "...");
-				serverSock = new Socket(addr, port);
+				sock = new Socket(addr, port);
 				in = new BufferedReader(new InputStreamReader(
-						serverSock.getInputStream()));
+						sock.getInputStream()));
 				out = new BufferedWriter(new OutputStreamWriter(
-						serverSock.getOutputStream()));
+						sock.getOutputStream()));
 			} catch (IOException e) {
 				view.showMessage("ERROR: could not create a socket on " 
 						+ host + " and port " + port + ".");
@@ -108,7 +108,7 @@ public class Client {
 	 * before calling this method!
 	 */
 	public void clearConnection() {
-		serverSock = null;
+		sock = null;
 		in = null;
 		out = null;
 	}
@@ -174,7 +174,7 @@ public class Client {
 		try {
 			in.close();
 			out.close();
-			serverSock.close();
+			sock.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -195,20 +195,24 @@ public class Client {
 			throws ServerUnavailableException, ProtocolException {
 		this.sendMessage(String.valueOf(ProtocolMessages.HANDSHAKE + ProtocolMessages.DELIMITER + 
 				//requestedVersion + ProtocolMessages.DELIMITER + 
-				this.name + ProtocolMessages.DELIMITER));
+				this.myName));
 		String line = this.readLineFromServer();
 		String[] lineSplit = line.split(ProtocolMessages.DELIMITER);
+
 		if (lineSplit[0] == null || !lineSplit[0].contentEquals(String.valueOf(ProtocolMessages.HANDSHAKE))) {
-			throw new ProtocolException("Error: server did not send HELLO");
-		} else {
-			if (lineSplit.length == 1 || lineSplit[1] == null) {
+			throw new ProtocolException("Error: server did not give the handshake");
+		} 
+		else {
+			if (!(lineSplit.length > 1) || lineSplit[1] == null) {
 				throw new ProtocolException("Error: server did not send the version");
 			}
 			else {
-				if (lineSplit.length == 2 && lineSplit[2] != null) {
-					view.showMessage(lineSplit[2]);
-				} else {
+				view.showMessage("The version of the protocol is: " + lineSplit[1]);
+				if (!(lineSplit.length > 2) || lineSplit[2] != null) {
 					view.showMessage("Server did not provide a welcome message. Welcome to the game anyway!");
+				} 
+				else {
+					view.showMessage(lineSplit[2]);
 				}
 			}
 		}
@@ -223,7 +227,7 @@ public class Client {
 		this.closeConnection();
 	}
 
-	
+
 	/**
 	 * Starts a new Client.
 	 */

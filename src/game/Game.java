@@ -1,4 +1,6 @@
-package server;
+package game;
+
+import server.ClientHandler;
 
 public class Game {
 
