@@ -7,8 +7,9 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import protocol.*;
 import exceptions.*;
+import protocol.*;
+import game.Game;
 
 public class Server implements Runnable {
 
@@ -73,7 +74,11 @@ public class Server implements Runnable {
 					//TODO look in list of clients if there are two connected clients not yet in a game
 					if (secondPlayer) {
 						//two players have connected, start a new Game!
-						games.add(new Game(clients.get(next_client_no - 3), clients.get(next_client_no - 2), boardSize));					
+						Game game = new Game(clients.get(next_client_no - 3), clients.get(next_client_no - 2), boardSize);
+						games.add(game);
+						//let the ClientHandlers know the Game they are playing on!
+						clients.get(next_client_no - 3).setGame(games.get(games.size()-1));
+						clients.get(next_client_no - 3).setGame(games.get(games.size()-1));
 					}
 				}
 			} catch (ExitProgram ep) {
@@ -154,6 +159,10 @@ public class Server implements Runnable {
 	}
 
 	public synchronized String doMove(String cmd) {
+		return "doMove Method";
+	}
+	
+	public synchronized String doPass(String cmd) {
 		return "doMove Method";
 	}
 

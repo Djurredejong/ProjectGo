@@ -10,10 +10,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 //import java.util.Scanner;
 
-import exceptions.ExitProgram;
-import exceptions.ProtocolException;
-import exceptions.ServerUnavailableException;
-import protocol.ProtocolMessages;
+import exceptions.*;
+import protocol.*;
 
 public class Client {
 
@@ -22,6 +20,11 @@ public class Client {
 	private BufferedWriter out;
 	private ClientTUI view;
 	private String myName;
+
+	private String boardSize;
+	public String getBoardSize() {
+		return boardSize;
+	}
 
 	/**
 	 * Constructs a new Client. Initialises the view.
@@ -44,12 +47,14 @@ public class Client {
 			createConnection();
 			System.out.println("connection to the server created!");
 			this.handleHello();
+			this.waitForStart();
 			view.start();
 		} catch (ExitProgram | ServerUnavailableException | ProtocolException e) {
 			view.showMessage(e + " in Client.start()");
 			e.printStackTrace();
 		} 
 	}
+
 
 	/**
 	 * Creates a connection to the server. Requests the IP and port to 
@@ -167,7 +172,7 @@ public class Client {
 
 	/**
 	 * Closes the connection by closing the In- and OutputStreams, as 
-	 * well as the serverSocket.
+	 * well as the ocket.
 	 */
 	public void closeConnection() {
 		System.out.println("Closing the connection...");
@@ -182,14 +187,6 @@ public class Client {
 
 	/**
 	 * Handles the server-client handshake as described in the protocol
-	 * 
-	 * This method sends the HELLO and checks whether the server response is valid
-	 * (must contain HELLO and the name of the hotel). - If the response is not
-	 * valid, this method throws a ProtocolException. - If the response is valid, a
-	 * welcome message including the hotel name is forwarded to the view.
-	 * 
-	 * @throws ServerUnavailableException if IO errors occur.
-	 * @throws ProtocolException          if the server response is invalid.
 	 */
 	public void handleHello() 
 			throws ServerUnavailableException, ProtocolException {
@@ -209,7 +206,7 @@ public class Client {
 			else {
 				view.showMessage("The version of the protocol is: " + lineSplit[1]);
 				if (!(lineSplit.length > 2) || lineSplit[2] != null) {
-					view.showMessage("Server did not provide a welcome message. Welcome to the game anyway!");
+					view.showMessage("Server did not provide a welcome message. Welcome anyway!");
 				} 
 				else {
 					view.showMessage(lineSplit[2]);
@@ -218,15 +215,68 @@ public class Client {
 		}
 	}
 
+	/**
+	 * Waits for the server to start a new Game with this client and another one
+	 */
+	public void waitForStart() throws ServerUnavailableException, ProtocolException {
+		String line = this.readLineFromServer();
+		String[] lineSplit = line.split(ProtocolMessages.DELIMITER);
 
-	public void doMove() {
+		if (lineSplit[0] == null || !lineSplit[0].contentEquals(String.valueOf(ProtocolMessages.GAME))) {
+			throw new ProtocolException("Error: server gave another command than the one for starting a game");
+		} 
+		else {
+			if (!(lineSplit.length > 1) || lineSplit[1] == null) {
+				throw new ProtocolException("Error: server did not send the board");
+			}
+			else {
+				view.showMessage("The size of the board is: " + lineSplit[1]);
+				this.boardSize = lineSplit[1];
+				if (!(lineSplit.length > 2) || lineSplit[2] != null) {
+					throw new ProtocolException("Error: server did not provide a colour");
+				} 
+				else {
+					view.showMessage("Your color is: " + lineSplit[2]);
+				}
+			}
+		}
 	}
 
+
+	/**
+	 * Checks if the move the user wants to do is valid.
+	 * If so, sends this move to the server.
+	 * Then waits for and reads the response from the server.
+	 * 
+	 * @param intersection The selected intersection
+	 */
+	public void doMove(int intersection) throws ServerUnavailableException {
+		//TODO check if move is valid
+		this.sendMessage(String.valueOf(ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + intersection));
+		String line = this.readLineFromServer();
+		//TODO update board accordingly
+		view.showMessage("> " + line);
+	}
+
+	/**
+	 * Lets the server know this client wants to pass
+	 * Then waits for and reads the response from the server.
+	 */
+	public void doPass() throws ServerUnavailableException {
+		this.sendMessage(String.valueOf(ProtocolMessages.PASS));
+		String line = this.readLineFromServer();
+		//TODO update board accordingly
+		view.showMessage("> " + line);
+	}
+
+	/** Sends a message to the server indicating that this client will quit:
+	 * 
+	 * Does not wait for response, just closes the connection.
+	 */
 	public void sendExit() throws ServerUnavailableException {
-		this.sendMessage(String.valueOf(ProtocolMessages.EXIT));
+		this.sendMessage(String.valueOf(ProtocolMessages.QUIT));
 		this.closeConnection();
 	}
-
 
 	/**
 	 * Starts a new Client.

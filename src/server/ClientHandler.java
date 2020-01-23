@@ -6,10 +6,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.net.SocketException;
+//import java.net.SocketException;
 
-import protocol.*;
 import exceptions.*;
+import protocol.*;
+import game.Game;
 
 /**
  * Handles the communication with one client. 
@@ -24,12 +25,20 @@ public class ClientHandler implements Runnable {
 	/** The connected Server */
 	private Server srv;
 
-	/** Name of this ClientHandler and getter*/
+	/** Name of this ClientHandler and getter */
 	private String name;
 	public String getName() {
 		return this.name;
 	}
-
+	
+	/** The game this ClientHandler plays on, and getter+setter */
+	private Game game;
+	public Game getGame() {
+		return game;
+	}
+	public void setGame(Game game) {
+		this.game = game;
+	}
 
 	/**
 	 * Constructs a new ClientHandler. Opens the In- and OutputStreams.
@@ -107,20 +116,20 @@ public class ClientHandler implements Runnable {
 				handshakeReceived = true;
 			}
 		}
-
+		
 		//if the received message is a turn
 		else if (msg.charAt(0) == ProtocolMessages.TURN) {
 			String[] msgSplit = msg.split(ProtocolMessages.DELIMITER);
 			if (msgSplit.length > 1 && msgSplit[1] != null) {
-				if (checkValidBoard(msgSplit[1])) {
+				if (srv.getGames().get(srv.getGames().indexOf(this.game)).getBoard().isValidMove(Integer.parseInt(msgSplit[1]))) {
 					out.write(srv.doMove(msgSplit[1]));
 				}
 				else {
-					throw new ProtocolException("You did not send me a correct board representation!");
+					throw new ProtocolException("You did not send me a valid move!");
 				}
 			}
 			else {
-				throw new ProtocolException("You did not send me a board!");
+				throw new ProtocolException("You did not send me a possible turn!");
 			}					
 		}
 
@@ -128,26 +137,6 @@ public class ClientHandler implements Runnable {
 		else {
 
 		}		
-	}
-
-	/**
-	 * Check whether a String represents a possible board situation
-	 * 
-	 * @param board The String to be checked
-	 * @return true if board represents a possible board situation
-	 */
-	private boolean checkValidBoard(String board) {
-		if (board.length() != srv.getBoardSize()) {
-			return false;
-		}
-		for (int i = 0; i < board.length(); i++) {
-			if (board.charAt(i) != ProtocolMessages.BLACK ||
-					board.charAt(i) != ProtocolMessages.WHITE ||
-					board.charAt(i) != ProtocolMessages.UNOCCUPIED) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 

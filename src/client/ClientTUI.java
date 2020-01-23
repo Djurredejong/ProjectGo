@@ -6,8 +6,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 
-import exceptions.ExitProgram;
-import exceptions.ServerUnavailableException;
+import exceptions.*;
+import protocol.*;
 
 public class ClientTUI {
 
@@ -39,7 +39,48 @@ public class ClientTUI {
 		}
 	}
 
+	/**
+	 * The user/client should be able to type one of the following three commands:
+	 * p or pass to pass (ignore case)
+	 * q or quit to quit (ignore case)
+	 * an integer to define the intersection on the board for his next move
+	 * 
+	 * @param input Input of the user
+	 */
 	public void handleUserInput(String input) throws ExitProgram, ServerUnavailableException {
+		showMessage("Please pick an intersection for your next stone or pass (p)");
+		if (input.equalsIgnoreCase("q") || input.equalsIgnoreCase("quit")) {
+			client.sendExit();
+		}
+		else if (input.equalsIgnoreCase("p") || input.equalsIgnoreCase("pass")) {
+			client.doPass();
+		}
+		else if (isInteger(input, 10)) {
+			int intersection = Integer.parseInt(input);		
+			if (intersection < 0 || intersection > (Integer.parseInt(client.getBoardSize()) - 1)) {
+				client.doMove(intersection);
+			}
+			else {
+				showMessage("The integer you typed does not represent an intersection");
+			}
+		}
+		else {
+			showMessage("Please pick an intersection, type p to pass or q to quit");
+		}
+	}
+
+	private boolean isInteger(String s, int radix) {
+		if (s.isEmpty()) return false;
+		for(int i = 0; i < s.length(); i++) {
+			if(i == 0 && s.charAt(i) == '-') {
+				if(s.length() == 1) return false;
+				else continue;
+			}
+			if (Character.digit(s.charAt(i),radix) < 0) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public void showMessage(String message) {
