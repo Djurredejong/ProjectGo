@@ -10,8 +10,14 @@ public class Game {
     /** The size of the board */
 	private int boardSize;
 	
-	/** The current player (always 0 or 1)*/
+	/** The current player (always 0 or 1) and getter+setter */
 	private int current;
+	public int getCurrent() {
+		return current;
+	}
+	public void setCurrent(int current) {
+		this.current = current;
+	}
 	
 	/** The Board this game is played on and getter method*/
 	private Board board;
@@ -33,8 +39,23 @@ public class Game {
 		players = new ClientHandler[2];
         players[0] = player1;
         players[1] = player2;
-        current = 0;
+        setCurrent(0);
 	}
 
-
+	public void move(int move) {
+		System.out.println("this is my move");
+	}
+	
+	/** 
+	 * As long as the game has not ended,
+	 * players make a move one after the other
+	 */
+	public void startPlay() {
+    	while (!board.gameOver()) {    		
+    		players[current].makeMove(board);
+    		current++;
+    		current = current % 2;
+    	}
+	}
+	
 }

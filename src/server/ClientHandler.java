@@ -30,7 +30,7 @@ public class ClientHandler implements Runnable {
 	public String getName() {
 		return this.name;
 	}
-	
+
 	/** The game this ClientHandler plays on, and getter+setter */
 	private Game game;
 	public Game getGame() {
@@ -38,6 +38,21 @@ public class ClientHandler implements Runnable {
 	}
 	public void setGame(Game game) {
 		this.game = game;
+	}
+	
+	/** Are there already two players connected to the game of this player */
+	boolean twoPlayers = false;
+	public void setTwoPlayers(Boolean bool) {
+		this.twoPlayers = true;
+	}
+
+	/** color of the player represented by this ClientHandler and getter+setter */
+	private char color;
+	public char getColor() {
+		return color;
+	}
+	public void setColor(char color) {
+		this.color = color;
 	}
 
 	/**
@@ -68,6 +83,20 @@ public class ClientHandler implements Runnable {
 		String msg;
 		try {
 			try {
+				//first the client needs to send the handshake
+				msg = in.readLine();
+				if (msg.charAt(0) == ProtocolMessages.HANDSHAKE) {
+					out.write(srv.getHello());
+				}
+				else {
+					throw new ProtocolException("No handshake received from " + name);
+				}
+				
+				//wait for the game to be start-ready
+				while (!twoPlayers) {
+				}
+				sendStart();
+				
 				msg = in.readLine();
 				while (msg != null) {
 					System.out.println("> [" + name + "] Incoming: " + msg);
@@ -83,16 +112,26 @@ public class ClientHandler implements Runnable {
 				//in case of a ProtocolException, disconnect the client
 				out.write(ProtocolMessages.INVALID + ProtocolMessages.DELIMITER 
 						+ "You did not adhere to the protocol, goodbye!");
-				System.out.println(name + " did not adhere to the protocol, I will isconnect " + name);
+				System.out.println(name + " did not adhere to the protocol, I will disconnect " + name);
 				shutdown();
 			}
 		} catch (IOException e) {
-			//This happens purposely...?
+			//This happens purposely
 			System.out.println("Goodbye!");
 			shutdown();
 		} 
 	}
 
+
+	/**
+	 * Send to the client that the game starts, according to the protocol
+	 * @throws IOException 
+	 */
+	public void sendStart() throws IOException {
+		System.out.println("Informing " + name + " that the game will start!");
+		out.write(ProtocolMessages.GAME + ProtocolMessages.DELIMITER + 
+				this.game.getBoard() + ProtocolMessages.DELIMITER + this.color);
+	}
 
 	/**
 	 * Handles commands received from the client by calling the according 
@@ -103,33 +142,22 @@ public class ClientHandler implements Runnable {
 	 */
 	private void handleCommand(String msg) throws IOException, ProtocolException {
 
-		//as soon as the handshake has been received,
-		//the client should not send it again
-		boolean handshakeReceived = false;
-		//if the received message is the handshake
-		if (msg.charAt(0) == ProtocolMessages.HANDSHAKE) {
-			if (handshakeReceived == true) {
-				throw new ProtocolException("You've already shook my hand!");
-			}
-			else {
-				out.write(srv.getHello());
-				handshakeReceived = true;
-			}
-		}
-		
-		//if the received message is a turn
-		else if (msg.charAt(0) == ProtocolMessages.TURN) {
+		//if the received message is a move
+		if (msg.charAt(0) == ProtocolMessages.MOVE) {
 			String[] msgSplit = msg.split(ProtocolMessages.DELIMITER);
-			if (msgSplit.length > 1 && msgSplit[1] != null) {
-				if (srv.getGames().get(srv.getGames().indexOf(this.game)).getBoard().isValidMove(Integer.parseInt(msgSplit[1]))) {
-					out.write(srv.doMove(msgSplit[1]));
+			if (msgSplit.length > 1 && msgSplit[1] != null && isInteger(msgSplit[1], 10)) {
+				//if (srv.getGames().get(srv.getGames().indexOf(this.game)).getBoard().isValidMove(Integer.parseInt(msgSplit[1]))) {
+				if (this.game.getBoard().isValidMove(Integer.parseInt(msgSplit[1]))) {
+					this.srv.doMove(this, Integer.parseInt(msgSplit[1]));
+					out.write(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + 
+							ProtocolMessages.VALID + ProtocolMessages.DELIMITER + this.game.getBoard());
 				}
 				else {
 					throw new ProtocolException("You did not send me a valid move!");
 				}
 			}
 			else {
-				throw new ProtocolException("You did not send me a possible turn!");
+				throw new ProtocolException("You did not send me a move!");
 			}					
 		}
 
@@ -139,6 +167,26 @@ public class ClientHandler implements Runnable {
 		}		
 	}
 
+	/**
+	 * Checks whether the provided String is parsable to int
+	 * 
+	 * @param s to check
+	 * @param radix 10 for decimal numbers
+	 * @return true if parsable
+	 */
+	private boolean isInteger(String s, int radix) {
+		if (s.isEmpty()) return false;
+		for(int i = 0; i < s.length(); i++) {
+			if(i == 0 && s.charAt(i) == '-') {
+				if(s.length() == 1) return false;
+				else continue;
+			}
+			if (Character.digit(s.charAt(i),radix) < 0) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	/**
 	 * Shut down the connection to this client by closing the socket and 
@@ -155,6 +203,8 @@ public class ClientHandler implements Runnable {
 		}
 		srv.removeClient(this);
 	}
+
+
 
 }
 

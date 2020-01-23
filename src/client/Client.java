@@ -219,7 +219,10 @@ public class Client {
 	 * Waits for the server to start a new Game with this client and another one
 	 */
 	public void waitForStart() throws ServerUnavailableException, ProtocolException {
+		view.showMessage("Waiting for the start of the game...");
 		String line = this.readLineFromServer();
+		System.out.println(line);
+		
 		String[] lineSplit = line.split(ProtocolMessages.DELIMITER);
 
 		if (lineSplit[0] == null || !lineSplit[0].contentEquals(String.valueOf(ProtocolMessages.GAME))) {

@@ -6,8 +6,21 @@ public class Board {
 	
 	private int boardSize;
 	
+	private String board;
+	
+	/**
+	 * Initialses an empty board representation: a String
+	 * of length (boardSize * boardSize - 1) with each char
+	 * being ProtocolMessages.UNOCCUPIED
+	 * 
+	 */
 	public Board(int boardSize) {
 		this.boardSize = boardSize;
+		board = "";
+		for (int i = 0; i < (boardSize * boardSize - 1); i++) {
+				board += ProtocolMessages.UNOCCUPIED; {
+			}
+		}
 	}
 
 	/**
@@ -30,9 +43,23 @@ public class Board {
 		return true;
 	}
 
-	public boolean isValidMove(int turn) {
-				return false;
+	/**
+	 * Checks whether a move is valid
+	 * Calls the MoveChecker class to do so
+	 */
+	public boolean isValidMove(int move) {
+		return false;
 	}
 	
+	/**
+	 * returns the String representation of the board
+	 */
+	public String toString() {
+		return board;
+	}
+
 	
+	public boolean gameOver() {	
+		return false;
+	}
 }

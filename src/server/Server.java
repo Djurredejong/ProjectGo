@@ -20,10 +20,10 @@ public class Server implements Runnable {
 	private List<ClientHandler> clients;
 
 	/** Next client number, increasing for every new connection */
-	private int next_client_no;
+	private int nextClientNo;
 
 	/** The view of this HotelServer */
-	private ServerTUI view;
+	public ServerTUI view;
 
 	/** The size of the board and getter method for it */
 	private int boardSize;
@@ -45,7 +45,7 @@ public class Server implements Runnable {
 		clients = new ArrayList<>();
 		games = new ArrayList<>();
 		view = new ServerTUI();
-		next_client_no = 1;
+		nextClientNo = 1;
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class Server implements Runnable {
 				while (true) {
 					secondPlayer = !secondPlayer;
 					Socket sock = ssock.accept();
-					String clientName = "Player " + String.format("%02d", next_client_no++);
+					String clientName = "Player " + String.format("%02d", nextClientNo++);
 					view.showMessage("New player [" + clientName + "] connected!");
 					ClientHandler handler = new ClientHandler(sock, this, clientName);
 					new Thread(handler).start();
@@ -74,11 +74,23 @@ public class Server implements Runnable {
 					//TODO look in list of clients if there are two connected clients not yet in a game
 					if (secondPlayer) {
 						//two players have connected, start a new Game!
-						Game game = new Game(clients.get(next_client_no - 3), clients.get(next_client_no - 2), boardSize);
+						Game game = new Game(clients.get(nextClientNo - 3), clients.get(nextClientNo - 2), boardSize);
 						games.add(game);
+						//give the ClientHandlers a color, first player is always black
+						clients.get(nextClientNo - 3).setColor(ProtocolMessages.BLACK);
+						clients.get(nextClientNo - 2).setColor(ProtocolMessages.WHITE);
 						//let the ClientHandlers know the Game they are playing on!
-						clients.get(next_client_no - 3).setGame(games.get(games.size()-1));
-						clients.get(next_client_no - 3).setGame(games.get(games.size()-1));
+						clients.get(nextClientNo - 3).setGame(games.get(games.size()-1));
+						clients.get(nextClientNo - 2).setGame(games.get(games.size()-1));
+						//wake up the ClientHandlers that will play in the new game
+						//by setting their boolean twoPlayer values to true
+						clients.get(nextClientNo - 3).setTwoPlayers(true);
+						clients.get(nextClientNo - 2).setTwoPlayers(true);
+						//send to both Clients that the game starts, according to the protocol
+						clients.get(nextClientNo - 3).sendStart();
+						clients.get(nextClientNo - 2).sendStart();
+						//start the game play
+						game.startPlay();
 					}
 				}
 			} catch (ExitProgram ep) {
@@ -157,13 +169,26 @@ public class Server implements Runnable {
 	public String getHello() {
 		return ProtocolMessages.HANDSHAKE + ProtocolMessages.DELIMITER + "version" + ProtocolMessages.DELIMITER;
 	}
-
-	public synchronized String doMove(String cmd) {
-		return "doMove Method";
+	
+	/**
+	 * Called by a ClientHandler, does the provided move on the board 
+	 * 
+	 * @param move The move of the player,
+	 * 		it is already checked in the ClientHandler
+	 * 		that this is a valid move
+	 */
+	public synchronized String doMove(ClientHandler handler, int move) {
+		//if (handler.getColor() == ProtocolMessages.BLACK) {
+			handler.getGame().move(move);
+			handler.getGame().setCurrent(handler.getGame().getCurrent() % 2);
+			return "move done";
+ 		//}
+	
+	
 	}
 	
 	public synchronized String doPass(String cmd) {
-		return "doMove Method";
+		return "doPss Method";
 	}
 
 
