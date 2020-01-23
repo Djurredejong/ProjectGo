@@ -89,6 +89,8 @@ public class Server implements Runnable {
 								clients.get(nextClientNo - 1).getName() + " will play against each other!");
 						clients.get(nextClientNo - 2).setTwoPlayers(true);
 						clients.get(nextClientNo - 1).setTwoPlayers(true);
+						clients.get(nextClientNo - 2).notify();
+						clients.get(nextClientNo - 1).notify();					
 						//start the game play
 						//game.startPlay();
 					}

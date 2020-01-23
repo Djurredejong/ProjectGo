@@ -93,7 +93,7 @@ public class ClientHandler implements Runnable {
 	 * Continuously listens to client input and forwards the input to the
 	 * handleCommand(String msg) method.
 	 */
-	public void run() {
+	public synchronized void run() {
 		String msg;
 		try {
 			try {
@@ -111,9 +111,14 @@ public class ClientHandler implements Runnable {
 				
 				System.out.println(name + " will wait for the game to start");
 				//wait for the game to be start-ready, then send Start to clients
-				while (!twoPlayers) {
-					//wait
-				}
+				//while (!twoPlayers) {
+					try {
+						this.wait();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				//}
 				System.out.println("Informing " + name + " that the game will start!");
 				out.write(ProtocolMessages.GAME + ProtocolMessages.DELIMITER + 
 						this.game.getBoard() + ProtocolMessages.DELIMITER + this.color);
