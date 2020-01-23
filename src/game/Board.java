@@ -17,7 +17,7 @@ public class Board {
 	public Board(int boardSize) {
 		this.boardSize = boardSize;
 		board = "";
-		for (int i = 0; i < (boardSize * boardSize - 1); i++) {
+		for (int i = 0; i < (boardSize * boardSize); i++) {
 				board += ProtocolMessages.UNOCCUPIED; {
 			}
 		}

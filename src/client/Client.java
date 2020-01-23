@@ -21,8 +21,8 @@ public class Client {
 	private ClientTUI view;
 	private String myName;
 
-	private String boardSize;
-	public String getBoardSize() {
+	private int boardSize;
+	public int getBoardSize() {
 		return boardSize;
 	}
 
@@ -45,7 +45,7 @@ public class Client {
 	public void start() {
 		try {
 			createConnection();
-			System.out.println("connection to the server created!");
+			System.out.println("Connection to the server created!");
 			this.handleHello();
 			this.waitForStart();
 			view.start();
@@ -81,7 +81,7 @@ public class Client {
 			// try to open a Socket to the server
 			try {
 				InetAddress addr = InetAddress.getByName(host);
-				view.showMessage("Attempting to connect to " + addr + ":" 
+				view.showMessage("Attempting to connect to " + addr + " :" 
 						+ port + "...");
 				sock = new Socket(addr, port);
 				in = new BufferedReader(new InputStreamReader(
@@ -172,7 +172,7 @@ public class Client {
 
 	/**
 	 * Closes the connection by closing the In- and OutputStreams, as 
-	 * well as the ocket.
+	 * well as the socket.
 	 */
 	public void closeConnection() {
 		System.out.println("Closing the connection...");
@@ -220,8 +220,10 @@ public class Client {
 	 */
 	public void waitForStart() throws ServerUnavailableException, ProtocolException {
 		view.showMessage("Waiting for the start of the game...");
+		
+		System.out.println("going to read line from server");
 		String line = this.readLineFromServer();
-		System.out.println(line);
+		System.out.println("line read " + line);
 		
 		String[] lineSplit = line.split(ProtocolMessages.DELIMITER);
 
@@ -233,10 +235,11 @@ public class Client {
 				throw new ProtocolException("Error: server did not send the board");
 			}
 			else {
-				view.showMessage("The size of the board is: " + lineSplit[1]);
-				this.boardSize = lineSplit[1];
-				if (!(lineSplit.length > 2) || lineSplit[2] != null) {
-					throw new ProtocolException("Error: server did not provide a colour");
+				view.showMessage("The state of the board is: " + lineSplit[1]);
+				this.boardSize = lineSplit[1].length();
+				view.showMessage("The size of the board is: " + boardSize);
+				if (!(lineSplit.length > 2) || lineSplit[2] == null) {
+					throw new ProtocolException("Error: server did not provide a color");
 				} 
 				else {
 					view.showMessage("Your color is: " + lineSplit[2]);

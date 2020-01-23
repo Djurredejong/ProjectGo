@@ -49,15 +49,18 @@ public class ClientTUI {
 	 */
 	public void handleUserInput(String input) throws ExitProgram, ServerUnavailableException {
 		showMessage("Please pick an intersection for your next stone or pass (p)");
+		
 		if (input.equalsIgnoreCase("q") || input.equalsIgnoreCase("quit")) {
 			client.sendExit();
 		}
+		
 		else if (input.equalsIgnoreCase("p") || input.equalsIgnoreCase("pass")) {
 			client.doPass();
 		}
+		
 		else if (isInteger(input, 10)) {
 			int intersection = Integer.parseInt(input);		
-			if (intersection < 0 || intersection > (Integer.parseInt(client.getBoardSize()) - 1)) {
+			if (intersection < 0 || intersection > (client.getBoardSize()) - 1) {
 				client.doMove(intersection);
 			}
 			else {

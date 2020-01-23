@@ -45,7 +45,7 @@ public class Server implements Runnable {
 		clients = new ArrayList<>();
 		games = new ArrayList<>();
 		view = new ServerTUI();
-		nextClientNo = 1;
+		nextClientNo = 0;
 	}
 
 	/**
@@ -64,8 +64,9 @@ public class Server implements Runnable {
 				boolean secondPlayer = true;
 				while (true) {
 					secondPlayer = !secondPlayer;
+					nextClientNo++;
 					Socket sock = ssock.accept();
-					String clientName = "Player " + String.format("%02d", nextClientNo++);
+					String clientName = "Player " + String.format("%02d", nextClientNo);
 					view.showMessage("New player [" + clientName + "] connected!");
 					ClientHandler handler = new ClientHandler(sock, this, clientName);
 					new Thread(handler).start();
@@ -74,23 +75,22 @@ public class Server implements Runnable {
 					//TODO look in list of clients if there are two connected clients not yet in a game
 					if (secondPlayer) {
 						//two players have connected, start a new Game!
-						Game game = new Game(clients.get(nextClientNo - 3), clients.get(nextClientNo - 2), boardSize);
+						Game game = new Game(clients.get(nextClientNo - 2), clients.get(nextClientNo - 1), boardSize);
 						games.add(game);
 						//give the ClientHandlers a color, first player is always black
-						clients.get(nextClientNo - 3).setColor(ProtocolMessages.BLACK);
-						clients.get(nextClientNo - 2).setColor(ProtocolMessages.WHITE);
+						clients.get(nextClientNo - 2).setColor(ProtocolMessages.BLACK);
+						clients.get(nextClientNo - 1).setColor(ProtocolMessages.WHITE);
 						//let the ClientHandlers know the Game they are playing on!
-						clients.get(nextClientNo - 3).setGame(games.get(games.size()-1));
 						clients.get(nextClientNo - 2).setGame(games.get(games.size()-1));
+						clients.get(nextClientNo - 1).setGame(games.get(games.size()-1));
 						//wake up the ClientHandlers that will play in the new game
 						//by setting their boolean twoPlayer values to true
-						clients.get(nextClientNo - 3).setTwoPlayers(true);
+						view.showMessage(clients.get(nextClientNo - 2).getName() + " and " +
+								clients.get(nextClientNo - 1).getName() + " will play against each other!");
 						clients.get(nextClientNo - 2).setTwoPlayers(true);
-						//send to both Clients that the game starts, according to the protocol
-						clients.get(nextClientNo - 3).sendStart();
-						clients.get(nextClientNo - 2).sendStart();
+						clients.get(nextClientNo - 1).setTwoPlayers(true);
 						//start the game play
-						game.startPlay();
+						//game.startPlay();
 					}
 				}
 			} catch (ExitProgram ep) {

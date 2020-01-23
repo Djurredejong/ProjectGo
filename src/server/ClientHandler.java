@@ -42,17 +42,31 @@ public class ClientHandler implements Runnable {
 	
 	/** Are there already two players connected to the game of this player */
 	boolean twoPlayers = false;
-	public void setTwoPlayers(Boolean bool) {
-		this.twoPlayers = true;
+	public void setTwoPlayers(boolean twoPlayers) {
+		this.twoPlayers = twoPlayers;
 	}
 
-	/** color of the player represented by this ClientHandler and getter+setter */
+	/** 
+	 * Color of the player represented by this ClientHandler
+	 * With getter+setter and method to change char to String
+	 */
 	private char color;
 	public char getColor() {
 		return color;
 	}
 	public void setColor(char color) {
 		this.color = color;
+	}
+	public String colorString(char color) {
+		if (color == ProtocolMessages.BLACK) {
+			return "Black";
+		}
+		else if (color == ProtocolMessages.WHITE) {
+			return "White";
+		}
+		else {
+			return "No color!";
+		}
 	}
 
 	/**
@@ -85,17 +99,26 @@ public class ClientHandler implements Runnable {
 			try {
 				//first the client needs to send the handshake
 				msg = in.readLine();
+				System.out.println("> [" + name + "] Incoming: " + msg);
 				if (msg.charAt(0) == ProtocolMessages.HANDSHAKE) {
 					out.write(srv.getHello());
+					out.newLine();
+					out.flush();
 				}
 				else {
 					throw new ProtocolException("No handshake received from " + name);
 				}
 				
-				//wait for the game to be start-ready
+				System.out.println(name + " will wait for the game to start");
+				//wait for the game to be start-ready, then send Start to clients
 				while (!twoPlayers) {
+					//wait
 				}
-				sendStart();
+				System.out.println("Informing " + name + " that the game will start!");
+				out.write(ProtocolMessages.GAME + ProtocolMessages.DELIMITER + 
+						this.game.getBoard() + ProtocolMessages.DELIMITER + this.color);
+				out.newLine();
+				out.flush();
 				
 				msg = in.readLine();
 				while (msg != null) {
@@ -128,9 +151,6 @@ public class ClientHandler implements Runnable {
 	 * @throws IOException 
 	 */
 	public void sendStart() throws IOException {
-		System.out.println("Informing " + name + " that the game will start!");
-		out.write(ProtocolMessages.GAME + ProtocolMessages.DELIMITER + 
-				this.game.getBoard() + ProtocolMessages.DELIMITER + this.color);
 	}
 
 	/**
@@ -203,8 +223,6 @@ public class ClientHandler implements Runnable {
 		}
 		srv.removeClient(this);
 	}
-
-
 
 }
 

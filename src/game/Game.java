@@ -9,6 +9,9 @@ public class Game {
 	
     /** The size of the board */
 	private int boardSize;
+	public int getBoardSize() {
+		return boardSize;
+	}
 	
 	/** The current player (always 0 or 1) and getter+setter */
 	private int current;
@@ -52,7 +55,7 @@ public class Game {
 	 */
 	public void startPlay() {
     	while (!board.gameOver()) {    		
-    		players[current].makeMove(board);
+    		//players[current].makeMove(board);
     		current++;
     		current = current % 2;
     	}
