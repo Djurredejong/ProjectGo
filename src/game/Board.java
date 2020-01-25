@@ -3,23 +3,21 @@ package game;
 import protocol.ProtocolMessages;
 
 public class Board {
-	
+
 	private int boardSize;
-	
+
 	private String board;
-	
+
+	private Mark[] intersecs;
+
 	/**
-	 * Initialses an empty board representation: a String
-	 * of length (boardSize * boardSize - 1) with each char
-	 * being ProtocolMessages.UNOCCUPIED
-	 * 
+	 * Creates an empty board
 	 */
 	public Board(int boardSize) {
 		this.boardSize = boardSize;
-		board = "";
+		intersecs = new Mark[boardSize * boardSize];
 		for (int i = 0; i < (boardSize * boardSize); i++) {
-				board += ProtocolMessages.UNOCCUPIED; {
-			}
+			intersecs[i] = Mark.U;
 		}
 	}
 
@@ -50,7 +48,7 @@ public class Board {
 	public boolean isValidMove(int move) {
 		return false;
 	}
-	
+
 	/**
 	 * returns the String representation of the board
 	 */
@@ -58,7 +56,7 @@ public class Board {
 		return board;
 	}
 
-	
+
 	public boolean gameOver() {	
 		return false;
 	}
