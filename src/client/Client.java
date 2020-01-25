@@ -221,7 +221,7 @@ public class Client {
 	public void waitForStart() throws ServerUnavailableException, ProtocolException {
 		view.showMessage("Waiting for the start of the game...");
 		
-		System.out.println("going to read line from server");
+		System.out.println("going to read line from server and print this line directly under here:");
 		String line = this.readLineFromServer();
 		System.out.println("line read " + line);
 		

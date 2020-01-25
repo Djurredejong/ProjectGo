@@ -93,37 +93,16 @@ public class ClientHandler implements Runnable {
 	 * Continuously listens to client input and forwards the input to the
 	 * handleCommand(String msg) method.
 	 */
-	public synchronized void run() {
+	public void run() {
 		String msg;
 		try {
 			try {
 				//first the client needs to send the handshake
-				msg = in.readLine();
-				System.out.println("> [" + name + "] Incoming: " + msg);
-				if (msg.charAt(0) == ProtocolMessages.HANDSHAKE) {
-					out.write(srv.getHello());
-					out.newLine();
-					out.flush();
-				}
-				else {
-					throw new ProtocolException("No handshake received from " + name);
-				}
+				doHandshake();
 				
 				System.out.println(name + " will wait for the game to start");
 				//wait for the game to be start-ready, then send Start to clients
-				//while (!twoPlayers) {
-					try {
-						this.wait();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				//}
-				System.out.println("Informing " + name + " that the game will start!");
-				out.write(ProtocolMessages.GAME + ProtocolMessages.DELIMITER + 
-						this.game.getBoard() + ProtocolMessages.DELIMITER + this.color);
-				out.newLine();
-				out.flush();
+				sendStart();
 				
 				msg = in.readLine();
 				while (msg != null) {
@@ -150,12 +129,33 @@ public class ClientHandler implements Runnable {
 		} 
 	}
 
-
+	
+	/**
+	 * Do the handshake, according to the protocol
+	 */
+	public synchronized void doHandshake() throws IOException, ProtocolException {
+		String msg = in.readLine();
+		System.out.println("> [" + name + "] Incoming: " + msg);
+		if (msg.charAt(0) == ProtocolMessages.HANDSHAKE) {
+			out.write(srv.getHello());
+			out.newLine();
+			out.flush();
+		}
+		else {
+			throw new ProtocolException("No handshake received from " + name);
+		}
+	}
+	
 	/**
 	 * Send to the client that the game starts, according to the protocol
-	 * @throws IOException 
 	 */
-	public void sendStart() throws IOException {
+	public synchronized void sendStart() throws IOException {
+		while (!twoPlayers) {
+		}
+		System.out.println("Informing " + name + " that the game will start!");
+		out.write(srv.getStart(this));
+		out.newLine();
+		out.flush();
 	}
 
 	/**

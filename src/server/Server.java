@@ -88,9 +88,7 @@ public class Server implements Runnable {
 						view.showMessage(clients.get(nextClientNo - 2).getName() + " and " +
 								clients.get(nextClientNo - 1).getName() + " will play against each other!");
 						clients.get(nextClientNo - 2).setTwoPlayers(true);
-						clients.get(nextClientNo - 1).setTwoPlayers(true);
-						clients.get(nextClientNo - 2).notify();
-						clients.get(nextClientNo - 1).notify();					
+						clients.get(nextClientNo - 1).setTwoPlayers(true);				
 						//start the game play
 						//game.startPlay();
 					}
@@ -171,6 +169,17 @@ public class Server implements Runnable {
 	public String getHello() {
 		return ProtocolMessages.HANDSHAKE + ProtocolMessages.DELIMITER + "version" + ProtocolMessages.DELIMITER;
 	}
+	
+	/**
+	 * Provides the protocol-defined start message the Server should give
+	 * 
+	 * @return server start message
+	 */
+	public String getStart(ClientHandler handler) {
+		return 	ProtocolMessages.GAME + ProtocolMessages.DELIMITER 
+				+ handler.getGame().getBoard() + ProtocolMessages.DELIMITER + handler.getColor();
+	}
+	
 	
 	/**
 	 * Called by a ClientHandler, does the provided move on the board 
