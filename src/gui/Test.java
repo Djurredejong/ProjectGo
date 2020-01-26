@@ -6,9 +6,8 @@ public class Test {
 	
 	
 	public Test() {
-		GoGUIIntegrator g = new GoGUIIntegrator(true, true, 10);
+		GoGUIIntegrator g = new GoGUIIntegrator(false, false, 3);
 		g.startGUI();
-		g.setBoardSize(10);
 	}
 	
 	

@@ -1,7 +1,7 @@
 package game;
 
 /**
- * Represents a mark in the Game.
+ * Represents the state of an intersection
  * There three possible values: UNOCCUPIED, BLACK, WHITE
  */
 public enum Mark {
@@ -24,9 +24,10 @@ public enum Mark {
 	/**
 	 * returns false for B, true for W
 	 * 
-	 * @requires this to be either B or W !!!
+	 * @requires this to be either B or W
 	 */
-	public boolean color() {
+	public boolean bool() {
+		assert this != U : "the mark of a player cannot be U!";
 		if (this == B) {
 			return false;
 		} else {
