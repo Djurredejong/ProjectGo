@@ -1,5 +1,7 @@
 package game;
 
+import exceptions.ExitProgram;
+
 public class GoGame {
 
 	/**
@@ -10,7 +12,12 @@ public class GoGame {
 		Player p1 = new Player("player2", Mark.W);
 
 		Game game = new Game(p0, p1, 4);
-		game.startPlay();
+		try {
+			game.startPlay();
+		} catch (ExitProgram e) {
+			// TODO exit the program
+			e.printStackTrace();
+		}
 
 	}
 }

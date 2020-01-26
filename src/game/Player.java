@@ -2,6 +2,8 @@ package game;
 
 import java.util.Scanner;
 
+import exceptions.ExitProgram;
+
 public class Player {
 
 	/**
@@ -40,7 +42,7 @@ public class Player {
 	 * player decide again) - TODO check if no previous board situation is recreated
 	 * (if not, let the player decide again)
 	 */
-	public void makeMove(Board board) {
+	public void makeMove(Board board) throws ExitProgram {
 		System.out.println("What column do you want to place your stone in?");
 		int col = in.nextInt();
 		System.out.println("What row do you want to place your stone in?");

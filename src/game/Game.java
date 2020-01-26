@@ -1,5 +1,7 @@
 package game;
 
+import exceptions.ExitProgram;
+
 //import server.ClientHandler;
 
 public class Game {
@@ -34,7 +36,7 @@ public class Game {
 	/**
 	 * As long as the game has not ended, players make a move one after the other
 	 */
-	public void startPlay() {
+	public void startPlay() throws ExitProgram {
 		while (!board.gameOver()) {
 			players[current].makeMove(board);
 			current++;
