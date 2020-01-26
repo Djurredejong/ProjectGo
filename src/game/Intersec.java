@@ -12,7 +12,9 @@ public class Intersec {
 	private Mark mark;
 
 	/**
-	 * Number of liberties of an intersection
+	 * Number of liberties of an intersection. Own convention: an unoccupied
+	 * intersection will always have its number of liberties set equal to its number
+	 * of neighbouring intersections.
 	 */
 	private int liberties;
 
@@ -22,13 +24,16 @@ public class Intersec {
 	 */
 	private List<Intersec> neighbours;
 
+	private Chain chain;
+
 	/**
-	 * Creates a new intersection This intersection is unoccupied and initially has
-	 * 4 liberties
+	 * Creates a new intersection This intersection is unoccupied, does hence not
+	 * belong to any chain and initially has 4 liberties
 	 */
 	public Intersec() {
 		this.mark = Mark.U;
 		this.liberties = 4;
+		this.chain = null;
 		neighbours = new ArrayList<>();
 	}
 
@@ -51,6 +56,13 @@ public class Intersec {
 	 */
 	public int getLiberties() {
 		return this.liberties;
+	}
+
+	/**
+	 * setter method for the number of liberties of this intersection
+	 */
+	public void setLiberties(int liberties) {
+		this.liberties = liberties;
 	}
 
 	/**
