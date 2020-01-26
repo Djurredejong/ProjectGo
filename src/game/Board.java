@@ -25,7 +25,8 @@ public class Board {
 	/**
 	 * The GUI of this board.
 	 */
-	private GoGUIIntegrator g;
+	// TODO set to public for testing
+	public GoGUIIntegrator g;
 
 	/**
 	 * Creates an empty board, gives each intersection its initial number of
@@ -67,16 +68,6 @@ public class Board {
 				i++;
 			}
 		}
-
-		// for (int i = 0; i < (boardSize * boardSize); i++) {
-		// intersecs[i] = new Intersec();
-		// if (i % boardSize == 0 || (i - 1) % boardSize == 0) {
-		// intersecs[i].reduceLib();
-		// }
-		// if (i < boardSize || (boardSize * boardSize - i) < boardSize) {
-		// intersecs[i].reduceLib();
-		// }
-		// }
 		g = new GoGUIIntegrator(false, false, this.boardSize);
 		if (gui) {
 			g.startGUI();
@@ -175,10 +166,10 @@ public class Board {
 		int i = coorToInt(col, row);
 		intersecs[i].setMark(Mark.U);
 		intersecs[i].setLiberties(4);
-		if (col == 0 || col == this.boardSize) {
+		if (col == 0 || col == this.boardSize - 1) {
 			intersecs[i].reduceLib();
 		}
-		if (row == 0 || row == this.boardSize) {
+		if (row == 0 || row == this.boardSize - 1) {
 			intersecs[i].reduceLib();
 		}
 		for (Intersec neighbour : intersecs[i].getNeighbours()) {
