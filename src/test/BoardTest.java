@@ -135,21 +135,19 @@ class BoardTest {
 		assertNotEquals(board.intersecs[0].getChain(), board.intersecs[3].getChain());
 		assertEquals(3, board.intersecs[0].getChain().chainLib());
 		board.putStone(2, 1, Mark.B);
-
 		board.putStone(2, 0, Mark.B);
 		assertEquals(board.intersecs[0].getChain(), board.intersecs[3].getChain());
 		assertEquals(board.intersecs[6].getChain(), board.intersecs[3].getChain());
-
-		// test: don't count liberties twice!
 		assertEquals(4, board.intersecs[0].getChain().chainLib());
 	}
 
 	/**
-	 * Tests whether a chain of stones is removed when captured. Also tests whether
-	 * the liberties are correct after removing a chain of stones.
+	 * Tests whether a chain of stones at the edge of the board is removed when
+	 * captured. Also tests whether the liberties are correct after removing the
+	 * chain of stones.
 	 */
 	@Test
-	void testRemoveChain() throws Exception {
+	void testRemoveChainEdge() throws Exception {
 		board.putStone(0, 0, Mark.B);
 		board.putStone(0, 1, Mark.B);
 		board.putStone(1, 0, Mark.B);
@@ -162,8 +160,83 @@ class BoardTest {
 		assertEquals(2, board.intersecs[0].getLiberties().size());
 		assertEquals(1, board.intersecs[1].getLiberties().size());
 		assertEquals(3, board.intersecs[2].getLiberties().size());
-		// assertEquals(3, board.intersecs[4].getLiberties());
-		// assertEquals(4, board.intersecs[5].getLiberties());
+		assertEquals(1, board.intersecs[4].getLiberties().size());
+		assertEquals(4, board.intersecs[5].getLiberties().size());
+	}
+
+	/**
+	 * Tests whether a chain of stones in the middle of the board is removed when
+	 * captured. Also tests whether the liberties are correct after removing the
+	 * chain of stones.
+	 */
+	@Test
+	void testRemoveChainMid() throws Exception {
+		board.putStone(1, 1, Mark.B);
+		board.putStone(1, 2, Mark.B);
+		board.putStone(2, 1, Mark.B);
+		board.putStone(2, 2, Mark.B);
+		board.putStone(0, 1, Mark.W);
+		board.putStone(0, 2, Mark.W);
+		board.putStone(3, 1, Mark.W);
+		board.putStone(3, 2, Mark.W);
+		board.putStone(1, 0, Mark.W);
+		board.putStone(2, 0, Mark.W);
+		board.putStone(1, 3, Mark.W);
+		board.putStone(2, 3, Mark.W);
+		assertEquals(Mark.U, board.intersecs[5].getMark());
+		assertEquals(Mark.U, board.intersecs[9].getMark());
+		assertEquals(Mark.W, board.intersecs[2].getMark());
+		assertEquals(0, board.intersecs[0].getLiberties().size());
+		assertEquals(2, board.intersecs[1].getLiberties().size());
+		assertEquals(2, board.intersecs[5].getLiberties().size());
+	}
+
+	/**
+	 * Almost identical to the above two tests: tests whether a chain of stones is
+	 * removed when captured by a suiciding stone. Also tests whether the liberties
+	 * are correct after removing the chain of stones.
+	 */
+	@Test
+	void testRemoveChainEdgeSuicide() throws Exception {
+		board.putStone(0, 0, Mark.B);
+		board.putStone(0, 1, Mark.B);
+		board.putStone(2, 0, Mark.W);
+		board.putStone(1, 1, Mark.W);
+		board.putStone(0, 2, Mark.W);
+		board.putStone(1, 0, Mark.B);
+		assertEquals(Mark.U, board.intersecs[0].getMark());
+		assertEquals(Mark.U, board.intersecs[1].getMark());
+		assertEquals(Mark.U, board.intersecs[3].getMark());
+		assertEquals(2, board.intersecs[0].getLiberties().size());
+		assertEquals(1, board.intersecs[1].getLiberties().size());
+		assertEquals(3, board.intersecs[2].getLiberties().size());
+		assertEquals(1, board.intersecs[4].getLiberties().size());
+		assertEquals(4, board.intersecs[5].getLiberties().size());
+	}
+
+	/**
+	 * See comment on previous test
+	 */
+	@Test
+	void testRemoveChainMidSuicide() throws Exception {
+		board.putStone(1, 1, Mark.B);
+		board.putStone(1, 2, Mark.B);
+		board.putStone(2, 1, Mark.B);
+		board.putStone(0, 1, Mark.W);
+		board.putStone(0, 2, Mark.W);
+		board.putStone(3, 1, Mark.W);
+		board.putStone(3, 2, Mark.W);
+		board.putStone(1, 0, Mark.W);
+		board.putStone(2, 0, Mark.W);
+		board.putStone(1, 3, Mark.W);
+		board.putStone(2, 3, Mark.W);
+		board.putStone(2, 2, Mark.B);
+		assertEquals(Mark.U, board.intersecs[5].getMark());
+		assertEquals(Mark.U, board.intersecs[9].getMark());
+		assertEquals(Mark.W, board.intersecs[2].getMark());
+		assertEquals(0, board.intersecs[0].getLiberties().size());
+		assertEquals(2, board.intersecs[1].getLiberties().size());
+		assertEquals(2, board.intersecs[5].getLiberties().size());
 	}
 
 }
