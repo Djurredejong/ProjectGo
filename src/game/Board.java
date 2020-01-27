@@ -1,5 +1,8 @@
 package game;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.nedap.go.gui.GoGUIIntegrator;
 
 import exceptions.ExitProgram;
@@ -24,11 +27,23 @@ public class Board {
 	private GoGUIIntegrator g;
 
 	/**
+	 * Indicates whether a first stone has been placed on the board.
+	 */
+	private boolean firstStone;
+
+	/**
+	 * Keeps track of all previous board situations (used for Ko-rule).
+	 */
+	private Set<String> boardSituations;
+
+	/**
 	 * Creates an empty board, gives each intersection its initial number of
 	 * liberties and its list of neighbours, starts the GUI. If gui is set to false,
-	 * the GUI will not be started (useful for testing).
+	 * the GUI will not be started (useful for testing). Finally initialises the
+	 * board situations as an empty set.
 	 */
 	public Board(int boardSize, boolean gui) {
+		this.firstStone = false;
 		this.boardSize = boardSize;
 		intersecs = new Intersec[boardSize * boardSize];
 		int i = 0;
@@ -64,6 +79,7 @@ public class Board {
 		if (gui) {
 			g.startGUI();
 		}
+		this.boardSituations = new HashSet<>();
 	}
 
 	/**
@@ -159,12 +175,14 @@ public class Board {
 	 * this stone. Add to this chain any neighbouring chains of the same colour.
 	 * Remove any stones of the opponent player that have no liberties anymore.
 	 * Remove any stones of the player who put the stone that have no liberties
-	 * anymore.
+	 * anymore. Finally updates the board situations with this new board situation
+	 * (for enforcing the Ko-rule).
 	 * 
 	 * @throws ExitProgram if some player (client) chooses an intersection for his
 	 *                     next stone that already has a stone on there
 	 */
 	public void putStone(int col, int row, Mark mark) throws ExitProgram {
+		this.firstStone = false;
 		int i = coorToInt(col, row);
 		if (!isUnoccupied(i)) {
 			throw new ExitProgram("Cannot place a stone at an intersection where there already is one!");
@@ -173,7 +191,6 @@ public class Board {
 		Chain chain = new Chain(intersecs[i], mark);
 		for (Intersec neighbour : intersecs[i].getNeighbours()) {
 			if (neighbour.getMark() == mark && !neighbour.getChain().equals(chain)) {
-				// System.out.println(neighbour.getChain() + " joined with " + chain);
 				chain.joinChain(neighbour.getChain());
 			}
 		}
@@ -185,6 +202,7 @@ public class Board {
 		if (intersecs[i].getChain().chainLib() == 0) {
 			removeChain(intersecs[i].getChain());
 		}
+		addBoardSituation(this.toString());
 	}
 
 	/**
@@ -192,6 +210,7 @@ public class Board {
 	 * row), the score will be counted by calling this method.
 	 */
 	public void countScore() {
+
 	}
 
 	/**
@@ -199,6 +218,9 @@ public class Board {
 	 */
 	public boolean gameOver() {
 		int i = 0;
+		if (!firstStone) {
+			return false;
+		}
 		for (int row = 0; row < boardSize; row++) {
 			for (int col = 0; col < boardSize; col++) {
 				if (intersecs[i].getMark() != Mark.U) {
@@ -211,16 +233,22 @@ public class Board {
 	}
 
 	/**
-	 * Useful for debugging.
+	 * Stores all the board situations to check whether no previous board situation
+	 * is recreated (Ko rule). This method should not be called when a player
+	 * passes!!!
+	 * 
+	 * @throws ExitProgram when the Ko rule has been violated
 	 */
-	@Override
-	public String toString() {
-		String s = "";
-		for (int i = 0; i < intersecs.length; i++) {
-			s = s + intersecs[i];
+	public void addBoardSituation(String boardSituation) throws ExitProgram {
+		if (boardSituations.contains(boardSituation)) {
+			throw new ExitProgram("The Ko rule has been violated!");
+		} else {
+			this.boardSituations.add(boardSituation);
 		}
-		return s;
 	}
+
+	// boolean for easier testing
+	public boolean violation = false;
 
 	// ------------------- Methods for communicating -----------------------------//
 
@@ -238,6 +266,19 @@ public class Board {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Turns a Board into a String. Can be used to communicate the contents of a
+	 * board situation. Also used for determining whether the Ko rule is breached.
+	 */
+	@Override
+	public String toString() {
+		String s = "";
+		for (int i = 0; i < intersecs.length; i++) {
+			s = s + intersecs[i];
+		}
+		return s;
 	}
 
 }

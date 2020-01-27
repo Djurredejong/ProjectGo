@@ -2,6 +2,7 @@ package test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,15 @@ import game.Mark;
 
 class BoardTest {
 
+	/**
+	 * A board to test.
+	 */
 	private Board board;
+
+	/**
+	 * To test whether an exception is thrown.
+	 */
+	boolean thrown;
 
 	/**
 	 * Creates a new 4x4 board.
@@ -42,7 +51,9 @@ class BoardTest {
 		try {
 			board.putStone(0, 0, Mark.W);
 		} catch (ExitProgram e) {
+			thrown = true;
 		}
+		assertTrue(thrown);
 		assertEquals(Mark.B, board.intersecs[0].getMark());
 		board.removeStone(0, 0);
 		board.putStone(0, 0, Mark.W);
@@ -134,6 +145,19 @@ class BoardTest {
 		assertEquals(board.intersecs[0].getChain(), board.intersecs[3].getChain());
 		assertEquals(board.intersecs[6].getChain(), board.intersecs[3].getChain());
 		assertEquals(4, board.intersecs[0].getChain().chainLib());
+	}
+
+	/**
+	 * Test whether a stone can be captured
+	 */
+	@Test
+	void testCapture() throws Exception {
+		board.putStone(0, 1, Mark.B);
+		board.putStone(1, 0, Mark.B);
+		board.putStone(1, 2, Mark.B);
+		board.putStone(1, 1, Mark.W);
+		board.putStone(2, 1, Mark.B);
+		assertEquals(Mark.U, board.intersecs[5].getMark());
 	}
 
 	/**
@@ -309,4 +333,53 @@ class BoardTest {
 		assertEquals(0, board.intersecs[4].getLiberties().size());
 		assertEquals(4, board.intersecs[5].getLiberties().size());
 	}
+
+	/**
+	 * Tests whether the Ko rule is upheld.
+	 */
+	@Test
+	void testKo() throws Exception {
+		board.putStone(0, 1, Mark.B);
+		board.removeStone(0, 1);
+		try {
+			board.putStone(0, 1, Mark.B);
+		} catch (ExitProgram e) {
+			thrown = true;
+		}
+		assertTrue(thrown);
+	}
+
+	/**
+	 * Tests whether the Ko rule is upheld when suiciding without capturing.
+	 */
+	@Test
+	void testSuicideKo() throws Exception {
+		board.putStone(0, 1, Mark.B);
+		board.putStone(1, 0, Mark.B);
+		board.putStone(1, 2, Mark.B);
+		board.putStone(2, 1, Mark.B);
+		try {
+			board.putStone(1, 1, Mark.W);
+		} catch (ExitProgram e) {
+			thrown = true;
+		}
+		assertTrue(thrown);
+	}
+
+	/**
+	 * Tests whether the Ko rule is not upheld when suiciding with capturing.
+	 */
+	@Test
+	void testCaptureNoKo() throws Exception {
+		board.putStone(1, 0, Mark.B);
+		board.putStone(0, 1, Mark.B);
+		board.putStone(2, 0, Mark.W);
+		board.putStone(1, 1, Mark.W);
+		board.putStone(0, 2, Mark.W);
+		board.putStone(0, 0, Mark.W);
+		assertEquals(Mark.W, board.intersecs[0].getMark());
+		assertEquals(Mark.U, board.intersecs[1].getMark());
+		assertEquals(Mark.U, board.intersecs[3].getMark());
+	}
+
 }

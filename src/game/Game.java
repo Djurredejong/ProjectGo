@@ -25,8 +25,8 @@ public class Game {
 	 * Creates a new Game object, initialises players, board size and current.
 	 * Parameters all received from Server, which initialises the games.
 	 */
-	public Game(Player player1, Player player2, int boardSize) {
-		this.board = new Board(boardSize, true);
+	public Game(Player player1, Player player2, int boardSize, boolean gui) {
+		this.board = new Board(boardSize, gui);
 		players = new Player[2];
 		players[0] = player1;
 		players[1] = player2;
@@ -41,19 +41,30 @@ public class Game {
 		boolean gameOver = false;
 		int consecPass = 0;
 		while (!gameOver) {
-			gameOver = board.gameOver();
+			System.out.println();
+			System.out.println(players[current].getName() + ", it's your turn!");
 			if (players[current].makeMove(board)) {
-				consecPass++;
-			} else {
 				consecPass = 0;
+			} else {
+				consecPass++;
 			}
 			if (consecPass == 2) {
 				gameOver = true;
+			} else {
+				gameOver = board.gameOver();
 			}
 			current++;
 			current = current % 2;
 		}
+		System.out.println("going to count the score!");
 		board.countScore();
+	}
+
+	/**
+	 * Getter method for the board this game is played on.
+	 */
+	public Board getBoard() {
+		return this.board;
 	}
 
 }
