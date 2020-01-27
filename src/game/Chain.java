@@ -1,7 +1,9 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A chain consists of stones (intersections with the same Mark, B or W) Each
@@ -16,6 +18,11 @@ public class Chain {
 	private List<Intersec> stones;
 
 	/**
+	 * A set of the liberties of this chain.
+	 */
+	private Set<Intersec> liberties;
+
+	/**
 	 * Creates a new chain, with a stone of certain colour (therefore, mark should
 	 * either be B or W) that has just been placed on the board and initialises the
 	 * stones List of this chain with it. Also updates the chain of the provided
@@ -23,20 +30,23 @@ public class Chain {
 	 */
 	public Chain(Intersec stone, Mark mark) {
 		stones = new ArrayList<>();
+		liberties = new HashSet<>();
 		stones.add(stone);
 		stone.setChain(this);
 	}
 
 	/**
 	 * Return the number of liberties of the chain, which is equal to those of all
-	 * the stones in the chain combined.
+	 * the stones in the chain combined, not counting any liberties twice. Hence the
+	 * use of a Set.
 	 */
 	public int chainLib() {
-		int lib = 0;
 		for (Intersec stone : stones) {
-			lib += stone.getLiberties();
+			for (Intersec liberty : stone.getLiberties()) {
+				liberties.add(liberty);
+			}
 		}
-		return lib;
+		return liberties.size();
 	}
 
 	/**

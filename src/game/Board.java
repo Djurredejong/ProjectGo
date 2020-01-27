@@ -36,14 +36,7 @@ public class Board {
 		int i = 0;
 		for (int row = 0; row < boardSize; row++) {
 			for (int col = 0; col < boardSize; col++) {
-				intersecs[i] = new Intersec();
-				intersecs[i] = intersecs[coorToInt(col, row)];
-				if (col == 0 || col == this.boardSize - 1) {
-					intersecs[i].reduceLib();
-				}
-				if (row == 0 || row == this.boardSize - 1) {
-					intersecs[i].reduceLib();
-				}
+				intersecs[i] = new Intersec(col, row);
 				i++;
 			}
 		}
@@ -52,15 +45,19 @@ public class Board {
 			for (int col = 0; col < boardSize; col++) {
 				if (col != 0) {
 					intersecs[i].addNeighbour(intersecs[coorToInt(col - 1, row)]);
+					intersecs[i].addLiberty(intersecs[coorToInt(col - 1, row)]);
 				}
 				if (col != boardSize - 1) {
 					intersecs[i].addNeighbour(intersecs[coorToInt(col + 1, row)]);
+					intersecs[i].addLiberty(intersecs[coorToInt(col + 1, row)]);
 				}
 				if (row != 0) {
 					intersecs[i].addNeighbour(intersecs[coorToInt(col, row - 1)]);
+					intersecs[i].addLiberty(intersecs[coorToInt(col, row - 1)]);
 				}
 				if (row != boardSize - 1) {
 					intersecs[i].addNeighbour(intersecs[coorToInt(col, row + 1)]);
+					intersecs[i].addLiberty(intersecs[coorToInt(col, row + 1)]);
 				}
 				i++;
 			}
@@ -172,45 +169,47 @@ public class Board {
 		int i = coorToInt(col, row);
 		g.addStone(col, row, mark.bool());
 		intersecs[i].setMark(mark);
-		for (Intersec neighbour : intersecs[i].getNeighbours()) {
-			if (neighbour.getMark() != Mark.U) {
-				intersecs[i].reduceLib();
-				neighbour.reduceLib();
+		for (int j = 0; j < intersecs[i].getNeighbours().size(); j++) {
+			if (intersecs[i].getNeighbours().get(j).getMark() != Mark.U) {
+				intersecs[i].removeLiberty(intersecs[i].getNeighbours().get(j));
+				intersecs[i].getNeighbours().get(j).removeLiberty(intersecs[i]);
+			} else {
+				intersecs[i].getNeighbours().get(j).removeLiberty(intersecs[i]);
 			}
 		}
+//		for (Intersec neighbour : intersecs[i].getNeighbours()) {
+//			if (neighbour.getMark() != Mark.U) {
+//				intersecs[i].removeLiberty(neighbour);
+//				neighbour.removeLiberty(intersecs[i]);
+//			} else {
+//				neighbour.removeLiberty(intersecs[i]);
+//			}
+//		}
 	}
 
 	/**
 	 * Removes a stone from the GUI. Updates the intersection on which the stone is
 	 * placed by changing the mark to the stone's colour. Then updates liberties of
-	 * the intersection (set to initial value) and those of the neighbouring stones.
+	 * the neighbouring stones.
 	 */
 	public void removeStone(int col, int row) {
 		int i = coorToInt(col, row);
 		g.removeStone(col, row);
 		intersecs[i].setMark(Mark.U);
-		intersecs[i].setLiberties(4);
-		if (col == 0 || col == this.boardSize - 1) {
-			intersecs[i].reduceLib();
+		for (int j = 0; j < intersecs[i].getNeighbours().size(); j++) {
+			intersecs[i].getNeighbours().get(j).addLiberty(intersecs[i]);
 		}
-		if (row == 0 || row == this.boardSize - 1) {
-			intersecs[i].reduceLib();
-		}
-		for (Intersec neighbour : intersecs[i].getNeighbours()) {
-			if (neighbour.getMark() != Mark.U) {
-				neighbour.increaseLib();
-			}
-		}
+//		for (Intersec neighbour : intersecs[i].getNeighbours()) {
+//			neighbour.addLiberty(intersecs[i]);
+//		}
 	}
 
 	/**
 	 * Removes a chain from the board.
 	 */
 	public void removeChain(Chain chain) {
-		for (int i = 0; i < chain.getStones().size(); i++) {
-			int col = getCol(i);
-			int row = getRow(i);
-			removeStone(col, row);
+		for (Intersec stone : chain.getStones()) {
+			removeStone(stone.getCol(), stone.getRow());
 		}
 	}
 
@@ -229,15 +228,33 @@ public class Board {
 		}
 		addStone(col, row, mark);
 		Chain chain = new Chain(intersecs[i], mark);
-		for (Intersec neighbour : intersecs[i].getNeighbours()) {
-			if (neighbour.getMark() == mark && !neighbour.getChain().equals(chain)) {
-				chain.joinChain(neighbour.getChain());
-			} else if (neighbour.getMark() == mark.other()) {
-				if (neighbour.getChain().chainLib() == 0) {
-					removeChain(neighbour.getChain());
+		for (int j = 0; j < intersecs[i].getNeighbours().size(); j++) {
+			if (intersecs[i].getNeighbours().get(j).getMark() == mark
+					&& !intersecs[i].getNeighbours().get(j).getChain().equals(chain)) {
+				chain.joinChain(intersecs[i].getNeighbours().get(j).getChain());
+			} else if (intersecs[i].getNeighbours().get(j).getMark() == mark.other()) {
+				if (intersecs[i].getNeighbours().get(j).getChain().chainLib() == 0) {
+					removeChain(intersecs[i].getNeighbours().get(j).getChain());
 				}
 			}
 		}
+
+//		for (Intersec neighbour : intersecs[i].getNeighbours()) {
+//			if (neighbour.getMark() == mark && !neighbour.getChain().equals(chain)) {
+//				chain.joinChain(neighbour.getChain());
+//			} else if (neighbour.getMark() == mark.other()) {
+//				System.out.println(
+//						"looking at neighbours of stone " + i + " whose neighbouring stone is in a chain with length "
+//								+ neighbour.getChain().getStones().size() + " and with #liberties "
+//								+ neighbour.getChain().chainLib());
+//				for (int j = 0; j < 9; j++) {
+//					System.out.println("#liberties of stone " + j + " is " + intersecs[j].getLiberties().size());
+//				}
+//				if (neighbour.getChain().chainLib() == 0) {
+//					removeChain(neighbour.getChain());
+//				}
+//			}
+//		}
 	}
 
 	// /**

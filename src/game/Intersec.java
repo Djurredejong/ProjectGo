@@ -16,17 +16,17 @@ public class Intersec {
 	private Mark mark;
 
 	/**
-	 * Number of liberties of an intersection. Own convention: an unoccupied
-	 * intersection will always have its number of liberties set equal to its number
-	 * of neighbouring intersections.
-	 */
-	private int liberties;
-
-	/**
 	 * List of neighbouring intersections, initialised when creating the board
 	 * Intersection can have 2, 3 or 4 neighbours.
 	 */
 	private List<Intersec> neighbours;
+
+	/**
+	 * List of liberties of this intersection (not actually a thing, but necessary
+	 * for determining liberties of a chain). Initially equal to the list of
+	 * neighbouring intersections.
+	 */
+	private List<Intersec> liberties;
 
 	/**
 	 * The chain this intersection (in case its Mark is B or W, and hence it's a
@@ -34,15 +34,18 @@ public class Intersec {
 	 */
 	private Chain chain;
 
+	private int col;
+	private int row;
+
 	/**
 	 * Creates a new intersection This intersection is unoccupied, does hence not
 	 * belong to any chain and initially has 4 liberties.
 	 */
-	public Intersec() {
+	public Intersec(int col, int row) {
 		this.mark = Mark.U;
-		this.liberties = 4;
 		this.chain = null;
 		neighbours = new ArrayList<>();
+		liberties = new ArrayList<>();
 	}
 
 	/**
@@ -74,34 +77,6 @@ public class Intersec {
 	}
 
 	/**
-	 * Getter method for the number of liberties of this intersection.
-	 */
-	public int getLiberties() {
-		return this.liberties;
-	}
-
-	/**
-	 * Setter method for the number of liberties of this intersection.
-	 */
-	public void setLiberties(int liberties) {
-		this.liberties = liberties;
-	}
-
-	/**
-	 * Reduces the number of liberties of this intersection by 1.
-	 */
-	public void reduceLib() {
-		this.liberties--;
-	}
-
-	/**
-	 * Increases the number of liberties of this intersection by 1.
-	 */
-	public void increaseLib() {
-		this.liberties++;
-	}
-
-	/**
 	 * Getter method for the neighbours of this intersection.
 	 */
 	public List<Intersec> getNeighbours() {
@@ -113,6 +88,35 @@ public class Intersec {
 	 */
 	public void addNeighbour(Intersec neighbour) {
 		this.neighbours.add(neighbour);
+	}
+
+	/**
+	 * Getter method for the liberties of this intersection.
+	 */
+	public List<Intersec> getLiberties() {
+		return liberties;
+	}
+
+	/**
+	 * Adds a liberty to the liberties list of this intersection.
+	 */
+	public void addLiberty(Intersec liberty) {
+		this.liberties.add(liberty);
+	}
+
+	/**
+	 * Removes a liberty from the liberties list of this intersection.
+	 */
+	public void removeLiberty(Intersec liberty) {
+		this.liberties.remove(liberty);
+	}
+
+	public int getCol() {
+		return col;
+	}
+
+	public int getRow() {
+		return row;
 	}
 
 }
