@@ -382,4 +382,17 @@ class BoardTest {
 		assertEquals(Mark.U, board.intersecs[3].getMark());
 	}
 
+	/**
+	 * Tests whether the game ends and the scoring mechanism functions.
+	 */
+	@Test
+	void testScoring() throws Exception {
+		for (int row = 0; row < 4; row++) {
+			for (int col = 0; col < 4; col++) {
+				board.putStone(col, row, Mark.B);
+			}
+		}
+		assertFalse(board.determineWinner());
+	}
+
 }

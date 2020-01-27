@@ -57,7 +57,11 @@ public class Game {
 			current = current % 2;
 		}
 		System.out.println("going to count the score!");
-		board.countScore();
+		if (board.determineWinner()) {
+			System.out.println("White has won!");
+		} else {
+			System.out.println("Black has won!");
+		}
 	}
 
 	/**

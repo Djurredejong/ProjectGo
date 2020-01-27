@@ -32,6 +32,19 @@ public class Board {
 	private boolean firstStone;
 
 	/**
+	 * The final score of the player whose Mark is B, i.e. the first player. This is
+	 * a double, in line with the Protocol.
+	 */
+	double blackScore;
+
+	/**
+	 * The final score of the player whose Mark is W, i.e. the second player. This
+	 * is a double, in line with the Protocol, and when counting the scores, will
+	 * get an initial value (Komi) of 0.5.
+	 */
+	double whiteScore;
+
+	/**
 	 * Keeps track of all previous board situations (used for Ko-rule).
 	 */
 	private Set<String> boardSituations;
@@ -207,10 +220,65 @@ public class Board {
 
 	/**
 	 * After the game has ended (either board full or two consecutive passes in a
-	 * row), the score will be counted by calling this method.
+	 * row), the score will be counted by calling this method. For all intersections
+	 * it determines to whose area it belongs (black or white). Then it counts the
+	 * scores of both players by adding up all intersections that belong to only
+	 * them (these include their own stones).
 	 */
 	public void countScore() {
+		whiteScore = 0.5;
+		blackScore = 0;
+		for (int i = 0; i < intersecs.length; i++) {
+			if (intersecs[i].getMark() == Mark.B) {
+				blackArea(intersecs[i]);
+			} else if (intersecs[i].getMark() == Mark.W) {
+				whiteArea(intersecs[i]);
+			}
+		}
+		for (int i = 0; i < intersecs.length; i++) {
+			if (intersecs[i].getAreaColor() == Mark.B) {
+				blackScore = blackScore + 1;
+			}
+			if (intersecs[i].getAreaColor() == Mark.W) {
+				whiteScore = whiteScore + 1;
+			}
+		}
+	}
 
+	/**
+	 * Determines which neighbouring intersections of a black stone belong to
+	 * black's area and updates the area indicator of those intersections.
+	 */
+	public void blackArea(Intersec intersec) {
+		for (Intersec neighbour : intersec.getNeighbours()) {
+			if (neighbour.getMark() != Mark.W) {
+				neighbour.setBlackArea();
+				blackArea(neighbour);
+			}
+		}
+	}
+
+	/**
+	 * Determines which neighbouring intersections of a black stone belong to
+	 * black's area and updates the area indicator of those intersections.
+	 */
+	public void whiteArea(Intersec intersec) {
+		for (Intersec neighbour : intersec.getNeighbours()) {
+			if (neighbour.getMark() != Mark.B) {
+				neighbour.setWhiteArea();
+				whiteArea(neighbour);
+			}
+		}
+	}
+
+	/**
+	 * Determine the winner of the game. Return true if white wins, false if black
+	 * wins.
+	 */
+	public boolean determineWinner() {
+		countScore();
+		System.out.println("white's score is " + whiteScore + ", black's score is " + blackScore);
+		return (whiteScore > blackScore);
 	}
 
 	/**
@@ -234,10 +302,10 @@ public class Board {
 
 	/**
 	 * Stores all the board situations to check whether no previous board situation
-	 * is recreated (Ko rule). This method should not be called when a player
+	 * is recreated (Ko-rule). This method should not be called when a player
 	 * passes!!!
 	 * 
-	 * @throws ExitProgram when the Ko rule has been violated
+	 * @throws ExitProgram when the Ko-rule has been violated
 	 */
 	public void addBoardSituation(String boardSituation) throws ExitProgram {
 		if (boardSituations.contains(boardSituation)) {
@@ -246,9 +314,6 @@ public class Board {
 			this.boardSituations.add(boardSituation);
 		}
 	}
-
-	// boolean for easier testing
-	public boolean violation = false;
 
 	// ------------------- Methods for communicating -----------------------------//
 
@@ -269,8 +334,9 @@ public class Board {
 	}
 
 	/**
-	 * Turns a Board into a String. Can be used to communicate the contents of a
-	 * board situation. Also used for determining whether the Ko rule is breached.
+	 * Turns a Board into a String. Useful for debugging. Should be used to
+	 * communicate the contents of a board situation. Also used for determining
+	 * whether the Ko-rule is breached.
 	 */
 	@Override
 	public String toString() {

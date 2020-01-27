@@ -47,6 +47,16 @@ public class Intersec {
 	private int row;
 
 	/**
+	 * True if this intersections belongs to the area of black.
+	 */
+	private boolean blackArea;
+
+	/**
+	 * True if this intersections belongs to the area of white.
+	 */
+	private boolean whiteArea;
+
+	/**
 	 * Creates a new intersection. Initialises the column and row. This intersection
 	 * is unoccupied, does hence not belong to any chain. The neighbour list and
 	 * liberties set get initialised by the method calling this (the constructor of
@@ -144,6 +154,39 @@ public class Intersec {
 	@Override
 	public String toString() {
 		return (mark + ": " + col + ", " + row);
+	}
+
+	/**
+	 * This stone belongs to the area of black when this method is called.
+	 */
+	public void setBlackArea() {
+		this.blackArea = true;
+	}
+
+	/**
+	 * This stone belongs to the area of white when this method is called.
+	 */
+	public void setWhiteArea() {
+		this.whiteArea = true;
+	}
+
+	/**
+	 * Checks to which of the players this intersection belongs upon counting the
+	 * score. If it belongs to an area of either player, it should not be counted
+	 * towards either one's points.
+	 */
+	public Mark getAreaColor() {
+		if (this.blackArea) {
+			if (!this.whiteArea) {
+				return Mark.B;
+			}
+		}
+		if (this.whiteArea) {
+			if (!this.blackArea) {
+				return Mark.W;
+			}
+		}
+		return Mark.U;
 	}
 
 }
