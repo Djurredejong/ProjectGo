@@ -108,7 +108,30 @@ class BoardTest {
 		board.putStone(2, 0, Mark.B);
 		assertEquals(board.intersecs[0].getChain(), board.intersecs[3].getChain());
 		assertEquals(board.intersecs[6].getChain(), board.intersecs[3].getChain());
-		assertEquals(6, board.intersecs[0].getChain().chainLib());
+		// TODO don't count liberties twice!
+		assertEquals(4, board.intersecs[0].getChain().chainLib());
+	}
+
+	/**
+	 * Tests whether a chain of stones is removed when captured. Alsoests whether
+	 * the liberties are correct after removing a chain of stones.
+	 */
+	@Test
+	void testRemoveChain() throws Exception {
+		board.putStone(0, 0, Mark.B);
+		board.putStone(0, 1, Mark.B);
+		board.putStone(1, 0, Mark.B);
+		board.putStone(2, 0, Mark.W);
+		board.putStone(1, 1, Mark.W);
+		board.putStone(0, 2, Mark.W);
+		assertEquals(Mark.U, board.intersecs[0].getMark());
+		assertEquals(Mark.U, board.intersecs[1].getMark());
+		assertEquals(Mark.U, board.intersecs[3].getMark());
+		assertEquals(2, board.intersecs[0].getLiberties());
+		assertEquals(3, board.intersecs[1].getLiberties());
+		assertEquals(3, board.intersecs[2].getLiberties());
+		// assertEquals(3, board.intersecs[4].getLiberties());
+		// assertEquals(4, board.intersecs[5].getLiberties());
 	}
 
 }

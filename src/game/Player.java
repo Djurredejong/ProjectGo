@@ -38,9 +38,9 @@ public class Player {
 
 	/**
 	 * Make a move on the board: Let the player decide on where to place the next
-	 * stone and then - check if the intersection is unoccupied (if not, let the
-	 * player decide again) - TODO check if no previous board situation is recreated
-	 * (if not, let the player decide again)
+	 * stone and then - check if the intersection is valid (exists and unoccupied)
+	 * (if not, let the player decide again) - TODO check if no previous board
+	 * situation is recreated (if not, let the player decide again)
 	 */
 	public void makeMove(Board board) throws ExitProgram {
 		System.out.println("What column do you want to place your stone in?");
@@ -51,7 +51,7 @@ public class Player {
 
 		boolean valid = board.isUnoccupied(intersec);
 
-		while (!valid) {
+		while (!valid || intersec < 0 || intersec > board.getBoardSize() * board.getBoardSize()) {
 			System.out.println("That is not a valid intersection. Try again!");
 			System.out.println("What column do you want to place your stone in?");
 			col = in.nextInt();

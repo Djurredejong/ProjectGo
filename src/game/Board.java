@@ -8,13 +8,9 @@ import protocol.ProtocolMessages;
 public class Board {
 
 	/**
-	 * The size of the board and getter
+	 * The size of the board
 	 */
 	private int boardSize;
-
-	public int getBoardSize() {
-		return boardSize;
-	}
 
 	/**
 	 * The intersections of this board. Can either be black/white stones or
@@ -76,6 +72,13 @@ public class Board {
 	}
 
 	/**
+	 * Getter method for the size of this board.
+	 */
+	public int getBoardSize() {
+		return boardSize;
+	}
+
+	/**
 	 * Given a column and a row, gives the corresponding intersection. Print error
 	 * if column/row combination is not on the board.
 	 */
@@ -83,6 +86,22 @@ public class Board {
 		assert !(col < 0 || col > this.boardSize || row < 0
 				|| row > this.boardSize) : "Coordinates are not on the board!";
 		return row * this.boardSize + col;
+	}
+
+	/**
+	 * Return the column of an intersection when its index in the intersections
+	 * array is given.
+	 */
+	public int getCol(int i) {
+		return i % this.boardSize;
+	}
+
+	/**
+	 * Return the row of an intersection when its index in the intersections array
+	 * is given.
+	 */
+	public int getRow(int i) {
+		return i / this.boardSize;
 	}
 
 	/**
@@ -127,11 +146,13 @@ public class Board {
 	}
 
 	/**
-	 * Returns true if the intersection i exists on the board and is empty.
+	 * Returns true if the intersection i is empty.
+	 * 
+	 * @throws ExitProgram if the given intersection does not exist on the board.
 	 */
-	public boolean isUnoccupied(int i) {
+	public boolean isUnoccupied(int i) throws ExitProgram {
 		if (i < 0 || i > this.intersecs.length) {
-			return false;
+			throw new ExitProgram("You have provided an intersection that is not on the board!");
 		}
 		if (intersecs[i].getMark() == Mark.U) {
 			return true;
@@ -160,7 +181,7 @@ public class Board {
 	}
 
 	/**
-	 * Removes a stone from the GUI Updates the intersection on which the stone is
+	 * Removes a stone from the GUI. Updates the intersection on which the stone is
 	 * placed by changing the mark to the stone's colour. Then updates liberties of
 	 * the intersection (set to initial value) and those of the neighbouring stones.
 	 */
@@ -183,17 +204,27 @@ public class Board {
 	}
 
 	/**
+	 * Removes a chain from the board.
+	 */
+	public void removeChain(Chain chain) {
+		for (int i = 0; i < chain.getStones().size(); i++) {
+			int col = getCol(i);
+			int row = getRow(i);
+			removeStone(col, row);
+		}
+	}
+
+	/**
 	 * Put a stone on the board at the provided column and row. Create a chain with
 	 * this stone. Add to this chain any neighbouring chains of the same colour.
-	 * Remove any stones of the opponent player that have no liberties anymore. TODO
-	 * Then remove any stones of the player with this mark that have no liberties.
+	 * Remove any stones of the opponent player that have no liberties anymore.
 	 * 
 	 * @throws ExitProgram if some player (client) chooses an intersection for his
 	 *                     next stone that already has a stone on there
 	 */
 	public void putStone(int col, int row, Mark mark) throws ExitProgram {
 		int i = coorToInt(col, row);
-		if (intersecs[i].getMark() != Mark.U) {
+		if (!isUnoccupied(i)) {
 			throw new ExitProgram("Cannot place a stone at an intersection where there already is one!");
 		}
 		addStone(col, row, mark);
@@ -202,11 +233,11 @@ public class Board {
 			if (neighbour.getMark() == mark && !neighbour.getChain().equals(chain)) {
 				chain.joinChain(neighbour.getChain());
 			} else if (neighbour.getMark() == mark.other()) {
-				// checkLiberties(neighbour);
+				if (neighbour.getChain().chainLib() == 0) {
+					removeChain(neighbour.getChain());
+				}
 			}
 		}
-
-		// TODO noLiberties(col, row, mark);
 	}
 
 	// /**
