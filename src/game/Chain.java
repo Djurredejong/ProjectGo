@@ -18,11 +18,6 @@ public class Chain {
 	private List<Intersec> stones;
 
 	/**
-	 * A set of the liberties of this chain.
-	 */
-	private Set<Intersec> liberties;
-
-	/**
 	 * Creates a new chain, with a stone of certain colour (therefore, mark should
 	 * either be B or W) that has just been placed on the board and initialises the
 	 * stones List of this chain with it. Also updates the chain of the provided
@@ -30,32 +25,15 @@ public class Chain {
 	 */
 	public Chain(Intersec stone, Mark mark) {
 		stones = new ArrayList<>();
-		liberties = new HashSet<>();
+		// liberties = new HashSet<>();
 		stones.add(stone);
 		stone.setChain(this);
-	}
-
-	/**
-	 * Return the number of liberties of the chain, which is equal to those of all
-	 * the stones in the chain combined, not counting any liberties twice. Hence the
-	 * use of a Set.
-	 */
-	public int chainLib() {
-		liberties.clear();
-		for (Intersec stone : stones) {
-			for (Intersec liberty : stone.getLiberties()) {
-				liberties.add(liberty);
-			}
-		}
-		return liberties.size();
 	}
 
 	/**
 	 * Adds the stones of some other chain to the stone(s) of this chain.
 	 */
 	public void joinChain(Chain otherChain) {
-		System.out.println("joining two chains, namely this " + this + " and " + otherChain);
-
 		for (Intersec stone : otherChain.getStones()) {
 			this.stones.add(stone);
 			stone.setChain(this);
@@ -71,12 +49,32 @@ public class Chain {
 	}
 
 	/**
-	 * Getter method for the list of liberties (empty intersections) of this chain
+	 * Getter method for the list of liberties (empty neighbouring intersections) of
+	 * this chain
 	 */
 	public Set<Intersec> getLiberties() {
-		return this.liberties;
+		Set<Intersec> liberties = new HashSet<>();
+		for (Intersec stone : stones) {
+			for (Intersec liberty : stone.getLiberties()) {
+				liberties.add(liberty);
+			}
+		}
+		return liberties;
 	}
 
+	/**
+	 * Return the number of liberties of the chain, which is equal to those of all
+	 * the stones in the chain combined, not counting any liberties twice (hence
+	 * Set).
+	 */
+	public int chainLib() {
+		return this.getLiberties().size();
+	}
+
+	/**
+	 * Useful for debuggin
+	 */
+	@Override
 	public String toString() {
 		return ("chain with stones " + this.getStones() + " and liberties " + this.getLiberties());
 	}

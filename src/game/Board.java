@@ -180,7 +180,12 @@ public class Board {
 		for (Intersec neighbour : intersecs[i].getNeighbours()) {
 			if (neighbour.getMark() != Mark.U) {
 				intersecs[i].removeLiberty(neighbour);
+				System.out.println();
+				System.out.println("REMOVING LIBERTY: " + intersecs[i] + " from " + neighbour);
+				System.out.println("liberties before: " + neighbour.getLiberties());
 				neighbour.removeLiberty(intersecs[i]);
+				System.out.println("liberties after: " + neighbour.getLiberties());
+				System.out.println();
 			} else {
 				neighbour.removeLiberty(intersecs[i]);
 			}
@@ -268,6 +273,7 @@ public class Board {
 
 		for (Intersec neighbour : intersecs[i].getNeighbours()) {
 			if (neighbour.getMark() == mark && !neighbour.getChain().equals(chain)) {
+				System.out.println(neighbour.getChain() + " joined with " + chain);
 				chain.joinChain(neighbour.getChain());
 			} else if (neighbour.getMark() == mark.other()) {
 				System.out.println(

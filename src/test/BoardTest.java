@@ -110,7 +110,7 @@ class BoardTest {
 		board.putStone(0, 0, Mark.B);
 		board.putStone(1, 0, Mark.B);
 		assertEquals(board.intersecs[0].getChain(), board.intersecs[1].getChain());
-		assertEquals(2, board.intersecs[0].getChain().chainLib());
+		assertEquals(3, board.intersecs[0].getChain().chainLib());
 		board.putStone(3, 0, Mark.B);
 		assertNotEquals(board.intersecs[0].getChain(), board.intersecs[3].getChain());
 		board.putStone(2, 0, Mark.B);
@@ -135,16 +135,12 @@ class BoardTest {
 		assertNotEquals(board.intersecs[0].getChain(), board.intersecs[3].getChain());
 		assertEquals(3, board.intersecs[0].getChain().chainLib());
 		board.putStone(2, 1, Mark.B);
+
 		board.putStone(2, 0, Mark.B);
 		assertEquals(board.intersecs[0].getChain(), board.intersecs[3].getChain());
-
-		System.out.println(
-				"intersec 0 with colour " + board.intersecs[0].getMark() + " in " + board.intersecs[0].getChain());
-
 		assertEquals(board.intersecs[6].getChain(), board.intersecs[3].getChain());
-		// test: don't count liberties twice!
-		System.out.println("ja " + board.intersecs[0].getChain().getLiberties());
 
+		// test: don't count liberties twice!
 		assertEquals(4, board.intersecs[0].getChain().chainLib());
 	}
 

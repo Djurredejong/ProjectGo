@@ -1,7 +1,9 @@
 package game;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents an intersection on the board and stores info about the contents of
@@ -26,7 +28,7 @@ public class Intersec {
 	 * for determining liberties of a chain). Initially equal to the list of
 	 * neighbouring intersections.
 	 */
-	private List<Intersec> liberties;
+	private Set<Intersec> liberties;
 
 	/**
 	 * The chain this intersection (in case its Mark is B or W, and hence it's a
@@ -47,7 +49,7 @@ public class Intersec {
 		this.mark = Mark.U;
 		this.chain = null;
 		neighbours = new ArrayList<>();
-		liberties = new ArrayList<>();
+		liberties = new HashSet<>();
 	}
 
 	/**
@@ -95,7 +97,7 @@ public class Intersec {
 	/**
 	 * Getter method for the liberties of this intersection.
 	 */
-	public List<Intersec> getLiberties() {
+	public Set<Intersec> getLiberties() {
 		return liberties;
 	}
 
@@ -113,16 +115,26 @@ public class Intersec {
 		this.liberties.remove(liberty);
 	}
 
+	/**
+	 * Setter method for the row of this intersection
+	 */
 	public int getCol() {
 		return col;
 	}
 
+	/**
+	 * Getter method for the row of this intersection
+	 */
 	public int getRow() {
 		return row;
 	}
 
+	/**
+	 * Useful for debugging
+	 */
+	@Override
 	public String toString() {
-		return ("intersec at col " + col + " and row " + row);
+		return (mark + ": " + col + ", " + row);
 	}
 
 }
