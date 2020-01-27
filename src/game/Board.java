@@ -138,8 +138,20 @@ public class Board {
 		return s;
 	}
 
+	/**
+	 * Checks whether the board is full (and hence the game is over)
+	 */
 	public boolean gameOver() {
-		return false;
+		int i = 0;
+		for (int row = 0; row < boardSize; row++) {
+			for (int col = 0; col < boardSize; col++) {
+				if (intersecs[i].getMark() != Mark.U) {
+					return false;
+				}
+				i++;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -285,6 +297,9 @@ public class Board {
 				removeChain(neighbour.getChain());
 			}
 		}
+	}
+
+	public void countScore() {
 	}
 
 // /**

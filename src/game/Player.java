@@ -7,22 +7,14 @@ import exceptions.ExitProgram;
 public class Player {
 
 	/**
-	 * The name of this player and getter method
+	 * The name of this player
 	 */
 	private String name;
 
-	public String getName() {
-		return name;
-	}
-
 	/**
-	 * The mark of this player, either B or W, and getter method
+	 * The mark of this player, either B or W
 	 */
 	private Mark mark;
-
-	public Mark getMark() {
-		return mark;
-	}
 
 	/**
 	 * Creates a new player with the provided name and mark
@@ -42,7 +34,15 @@ public class Player {
 	 * (if not, let the player decide again) - TODO check if no previous board
 	 * situation is recreated (if not, let the player decide again)
 	 */
-	public void makeMove(Board board) throws ExitProgram {
+	public boolean makeMove(Board board) throws ExitProgram {
+		System.out.println();
+		System.out.println(name + ", it is your turn!");
+		System.out.println("Do you want to pass? (y/n)");
+		boolean pass = in.nextBoolean();
+		if (pass) {
+			return true;
+		}
+
 		System.out.println("What column do you want to place your stone in?");
 		int col = in.nextInt();
 		System.out.println("What row do you want to place your stone in?");
@@ -62,5 +62,7 @@ public class Player {
 		}
 
 		board.putStone(col, row, this.mark);
+		return false;
 	}
+
 }
