@@ -42,7 +42,6 @@ public class Player {
 		if (pass) {
 			return true;
 		}
-
 		System.out.println("What column do you want to place your stone in?");
 		int col = in.nextInt();
 		System.out.println("What row do you want to place your stone in?");

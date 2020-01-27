@@ -36,12 +36,21 @@ public class Intersec {
 	 */
 	private Chain chain;
 
+	/**
+	 * The column of this intersection.
+	 */
 	private int col;
+
+	/**
+	 * The row of this intersection.
+	 */
 	private int row;
 
 	/**
-	 * Creates a new intersection This intersection is unoccupied, does hence not
-	 * belong to any chain and initially has 4 liberties.
+	 * Creates a new intersection. Initialises the column and row. This intersection
+	 * is unoccupied, does hence not belong to any chain. The neighbour list and
+	 * liberties set get initialised by the method calling this (the constructor of
+	 * Board).
 	 */
 	public Intersec(int col, int row) {
 		this.col = col;
@@ -116,21 +125,21 @@ public class Intersec {
 	}
 
 	/**
-	 * Setter method for the row of this intersection
+	 * Setter method for the row of this intersection.
 	 */
 	public int getCol() {
 		return col;
 	}
 
 	/**
-	 * Getter method for the row of this intersection
+	 * Getter method for the row of this intersection.
 	 */
 	public int getRow() {
 		return row;
 	}
 
 	/**
-	 * Useful for debugging
+	 * Useful for debugging.
 	 */
 	@Override
 	public String toString() {
