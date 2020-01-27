@@ -246,6 +246,8 @@ public class Board {
 	 * Put a stone on the board at the provided column and row. Create a chain with
 	 * this stone. Add to this chain any neighbouring chains of the same colour.
 	 * Remove any stones of the opponent player that have no liberties anymore.
+	 * Remove any stones of the player who put the stone that have no liberties
+	 * anymore.
 	 * 
 	 * @throws ExitProgram if some player (client) chooses an intersection for his
 	 *                     next stone that already has a stone on there
@@ -285,17 +287,19 @@ public class Board {
 
 		for (Intersec neighbour : intersecs[i].getNeighbours()) {
 			if (neighbour.getMark() == mark && !neighbour.getChain().equals(chain)) {
-				System.out.println(neighbour.getChain() + " joined with " + chain);
+				// System.out.println(neighbour.getChain() + " joined with " + chain);
 				chain.joinChain(neighbour.getChain());
-			} else if (neighbour.getMark() == mark.other()) {
-				System.out.println(
-						"looking at neighbours of stone " + i + " whose neighbouring stone is in a chain with length "
-								+ neighbour.getChain().getStones().size() + " and with #liberties "
-								+ neighbour.getChain().chainLib());
 			}
-			if (neighbour.getChain() != null && neighbour.getChain().chainLib() == 0) {
+		}
+		for (Intersec neighbour : intersecs[i].getNeighbours()) {
+			System.out.println("HALLO");
+			if (neighbour.getMark() == mark.other() && neighbour.getChain().chainLib() == 0) {
+				System.out.println("remvogin " + neighbour.getChain());
 				removeChain(neighbour.getChain());
 			}
+		}
+		if (intersecs[i].getChain().chainLib() == 0) {
+			removeChain(intersecs[i].getChain());
 		}
 	}
 
