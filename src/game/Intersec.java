@@ -42,6 +42,8 @@ public class Intersec {
 	 * belong to any chain and initially has 4 liberties.
 	 */
 	public Intersec(int col, int row) {
+		this.col = col;
+		this.row = row;
 		this.mark = Mark.U;
 		this.chain = null;
 		neighbours = new ArrayList<>();
@@ -117,6 +119,10 @@ public class Intersec {
 
 	public int getRow() {
 		return row;
+	}
+
+	public String toString() {
+		return ("intersec at col " + col + " and row " + row);
 	}
 
 }

@@ -41,6 +41,7 @@ public class Chain {
 	 * use of a Set.
 	 */
 	public int chainLib() {
+		liberties.clear();
 		for (Intersec stone : stones) {
 			for (Intersec liberty : stone.getLiberties()) {
 				liberties.add(liberty);
@@ -53,6 +54,8 @@ public class Chain {
 	 * Adds the stones of some other chain to the stone(s) of this chain.
 	 */
 	public void joinChain(Chain otherChain) {
+		System.out.println("joining two chains, namely this " + this + " and " + otherChain);
+
 		for (Intersec stone : otherChain.getStones()) {
 			this.stones.add(stone);
 			stone.setChain(this);
@@ -60,10 +63,22 @@ public class Chain {
 	}
 
 	/**
-	 * Getter method for the list of stones (intersections) of this chain
+	 * Getter method for the list of stones (intersections of similar mark) of this
+	 * chain
 	 */
 	public List<Intersec> getStones() {
 		return this.stones;
+	}
+
+	/**
+	 * Getter method for the list of liberties (empty intersections) of this chain
+	 */
+	public Set<Intersec> getLiberties() {
+		return this.liberties;
+	}
+
+	public String toString() {
+		return ("chain with stones " + this.getStones() + " and liberties " + this.getLiberties());
 	}
 
 }

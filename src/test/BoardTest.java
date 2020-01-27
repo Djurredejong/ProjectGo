@@ -86,6 +86,7 @@ class BoardTest {
 	void testRemoveLib() throws Exception {
 		board.putStone(0, 0, Mark.B);
 		board.putStone(1, 0, Mark.B);
+		assertEquals(2, board.intersecs[1].getLiberties().size());
 		board.removeStone(1, 0);
 		assertEquals(2, board.intersecs[0].getLiberties().size());
 		assertEquals(2, board.intersecs[1].getLiberties().size());
@@ -102,15 +103,31 @@ class BoardTest {
 	 * Tests whether a newly placed stone without neighbouring stones of the same
 	 * colour is assigned its own chain and chains are correctly joined upon placing
 	 * a stone next to another one of the same colour. Also tests the chain's
-	 * liberties
+	 * liberties.
 	 */
 	@Test
 	void testJoinChains() throws Exception {
 		board.putStone(0, 0, Mark.B);
 		board.putStone(1, 0, Mark.B);
-		board.putStone(2, 0, Mark.W);
 		assertEquals(board.intersecs[0].getChain(), board.intersecs[1].getChain());
 		assertEquals(2, board.intersecs[0].getChain().chainLib());
+		board.putStone(3, 0, Mark.B);
+		assertNotEquals(board.intersecs[0].getChain(), board.intersecs[3].getChain());
+		board.putStone(2, 0, Mark.B);
+		board.putStone(2, 1, Mark.B);
+		assertEquals(board.intersecs[0].getChain(), board.intersecs[6].getChain());
+		assertEquals(4, board.intersecs[0].getChain().chainLib());
+	}
+
+	/**
+	 * Tests the combination of putting, removing, and again putting (a stone of
+	 * different colour this time) a stone with joining chains
+	 */
+	@Test
+	void testJoinChainsWR() throws Exception {
+		board.putStone(0, 0, Mark.B);
+		board.putStone(1, 0, Mark.B);
+		board.putStone(2, 0, Mark.W);
 		board.putStone(3, 0, Mark.B);
 		assertNotEquals(board.intersecs[0].getChain(), board.intersecs[3].getChain());
 		assertEquals(2, board.intersecs[0].getChain().chainLib());
@@ -120,8 +137,14 @@ class BoardTest {
 		board.putStone(2, 1, Mark.B);
 		board.putStone(2, 0, Mark.B);
 		assertEquals(board.intersecs[0].getChain(), board.intersecs[3].getChain());
+
+		System.out.println(
+				"intersec 0 with colour " + board.intersecs[0].getMark() + " in " + board.intersecs[0].getChain());
+
 		assertEquals(board.intersecs[6].getChain(), board.intersecs[3].getChain());
 		// test: don't count liberties twice!
+		System.out.println("ja " + board.intersecs[0].getChain().getLiberties());
+
 		assertEquals(4, board.intersecs[0].getChain().chainLib());
 	}
 

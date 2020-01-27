@@ -169,22 +169,22 @@ public class Board {
 		int i = coorToInt(col, row);
 		g.addStone(col, row, mark.bool());
 		intersecs[i].setMark(mark);
-		for (int j = 0; j < intersecs[i].getNeighbours().size(); j++) {
-			if (intersecs[i].getNeighbours().get(j).getMark() != Mark.U) {
-				intersecs[i].removeLiberty(intersecs[i].getNeighbours().get(j));
-				intersecs[i].getNeighbours().get(j).removeLiberty(intersecs[i]);
-			} else {
-				intersecs[i].getNeighbours().get(j).removeLiberty(intersecs[i]);
-			}
-		}
-//		for (Intersec neighbour : intersecs[i].getNeighbours()) {
-//			if (neighbour.getMark() != Mark.U) {
-//				intersecs[i].removeLiberty(neighbour);
-//				neighbour.removeLiberty(intersecs[i]);
+//		for (int j = 0; j < intersecs[i].getNeighbours().size(); j++) {
+//			if (intersecs[i].getNeighbours().get(j).getMark() != Mark.U) {
+//				intersecs[i].removeLiberty(intersecs[i].getNeighbours().get(j));
+//				intersecs[i].getNeighbours().get(j).removeLiberty(intersecs[i]);
 //			} else {
-//				neighbour.removeLiberty(intersecs[i]);
+//				intersecs[i].getNeighbours().get(j).removeLiberty(intersecs[i]);
 //			}
 //		}
+		for (Intersec neighbour : intersecs[i].getNeighbours()) {
+			if (neighbour.getMark() != Mark.U) {
+				intersecs[i].removeLiberty(neighbour);
+				neighbour.removeLiberty(intersecs[i]);
+			} else {
+				neighbour.removeLiberty(intersecs[i]);
+			}
+		}
 	}
 
 	/**
@@ -195,19 +195,31 @@ public class Board {
 	public void removeStone(int col, int row) {
 		int i = coorToInt(col, row);
 		g.removeStone(col, row);
+		Mark otherMark = intersecs[i].getMark().other();
 		intersecs[i].setMark(Mark.U);
-		for (int j = 0; j < intersecs[i].getNeighbours().size(); j++) {
-			intersecs[i].getNeighbours().get(j).addLiberty(intersecs[i]);
+		System.out.println("removed stone " + i);
+		// for (int j = 0; j < intersecs[i].getNeighbours().size(); j++) {
+		// if (intersecs[i].getNeighbours().get(j).getMark() == otherMark) {
+		// intersecs[i].getNeighbours().get(j).addLiberty(intersecs[i]);
+		// }
+		// }
+		System.out.println("other mark is " + otherMark);
+		for (Intersec neighbour : intersecs[i].getNeighbours()) {
+			System.out.println("mark of neighbour is " + neighbour.getMark());
+			// if (neighbour.getMark() == otherMark) {
+			neighbour.addLiberty(intersecs[i]);
+			// }
 		}
-//		for (Intersec neighbour : intersecs[i].getNeighbours()) {
-//			neighbour.addLiberty(intersecs[i]);
-//		}
 	}
 
 	/**
 	 * Removes a chain from the board.
 	 */
 	public void removeChain(Chain chain) {
+		// for (int j = 0; j < chain.getStones().size(); j++) {
+		// removeStone(chain.getStones().get(j).getCol(),
+		// chain.getStones().get(j).getRow());
+		// }
 		for (Intersec stone : chain.getStones()) {
 			removeStone(stone.getCol(), stone.getRow());
 		}
@@ -228,146 +240,158 @@ public class Board {
 		}
 		addStone(col, row, mark);
 		Chain chain = new Chain(intersecs[i], mark);
-		for (int j = 0; j < intersecs[i].getNeighbours().size(); j++) {
-			if (intersecs[i].getNeighbours().get(j).getMark() == mark
-					&& !intersecs[i].getNeighbours().get(j).getChain().equals(chain)) {
-				chain.joinChain(intersecs[i].getNeighbours().get(j).getChain());
-			} else if (intersecs[i].getNeighbours().get(j).getMark() == mark.other()) {
-				if (intersecs[i].getNeighbours().get(j).getChain().chainLib() == 0) {
-					removeChain(intersecs[i].getNeighbours().get(j).getChain());
-				}
-			}
+
+		System.out.println("placed stone " + i + " on the board, color " + intersecs[i].getMark());
+		for (int k = 0; k < 9; k++) {
+			System.out.println("#liberties of stone " + k + " is " + intersecs[k].getLiberties().size());
 		}
 
-//		for (Intersec neighbour : intersecs[i].getNeighbours()) {
-//			if (neighbour.getMark() == mark && !neighbour.getChain().equals(chain)) {
-//				chain.joinChain(neighbour.getChain());
-//			} else if (neighbour.getMark() == mark.other()) {
+//		for (int j = 0; j < intersecs[i].getNeighbours().size(); j++) {
+//			if (intersecs[i].getNeighbours().get(j).getMark() == mark
+//					&& !intersecs[i].getNeighbours().get(j).getChain().equals(chain)) {
+//				chain.joinChain(intersecs[i].getNeighbours().get(j).getChain());
+//			} else if (intersecs[i].getNeighbours().get(j).getMark() == mark.other()) {
 //				System.out.println(
 //						"looking at neighbours of stone " + i + " whose neighbouring stone is in a chain with length "
-//								+ neighbour.getChain().getStones().size() + " and with #liberties "
-//								+ neighbour.getChain().chainLib());
-//				for (int j = 0; j < 9; j++) {
-//					System.out.println("#liberties of stone " + j + " is " + intersecs[j].getLiberties().size());
-//				}
-//				if (neighbour.getChain().chainLib() == 0) {
-//					removeChain(neighbour.getChain());
+//								+ intersecs[i].getNeighbours().get(j).getChain().getStones().size()
+//								+ " and with #liberties " + intersecs[i].getNeighbours().get(j).getChain().chainLib());
+//				if (intersecs[i].getNeighbours().get(j).getChain().chainLib() == 0) {
+//					System.out.println("removing chain!");
+//					removeChain(intersecs[i].getNeighbours().get(j).getChain());
 //				}
 //			}
 //		}
+//		System.out.println("placed stone " + i + " on the board, color " + intersecs[i].getMark());
+//		for (int k = 0; k < 9; k++) {
+//			System.out.println("#liberties of stone " + k + " is " + intersecs[k].getLiberties().size());
+//		}
+
+		for (Intersec neighbour : intersecs[i].getNeighbours()) {
+			if (neighbour.getMark() == mark && !neighbour.getChain().equals(chain)) {
+				chain.joinChain(neighbour.getChain());
+			} else if (neighbour.getMark() == mark.other()) {
+				System.out.println(
+						"looking at neighbours of stone " + i + " whose neighbouring stone is in a chain with length "
+								+ neighbour.getChain().getStones().size() + " and with #liberties "
+								+ neighbour.getChain().chainLib());
+			}
+			if (neighbour.getChain() != null && neighbour.getChain().chainLib() == 0) {
+				removeChain(neighbour.getChain());
+			}
+		}
 	}
 
-	// /**
-	// * Check how many unoccupied neighbouring intersections the stone (chain) has
-	// * and update the number of liberties of all stones in the chain
-	// *
-	// * If
-	// */
-	// private void updateLiberties(int col, int row, Mark mark) {// (Intersec
-	// intersec) {
-	// System.out.println("RECURSION: now counting lib of col " + col + " and row "
-	// + row + " with a "
-	// + coorToIntersec(col, row).getMark() + " stone of " + coorToIntersec(col,
-	// row).getLiberties()
-	// + " liberties");
-	//
-	// Intersec intersec = coorToIntersec(col, row);
-	//
-	// for (Intersec neighbour : intersec.getNeighbours()) {
-	// if (neighbour.getMark() == Mark.U) {
-	//
-	// }
-	// }
-	//
-	// if (coorToIntersec(col, row).getMark() == mark.U) {
-	// coorToIntersec(col, row).increaseLib();
-	// if (coorToIntersec(col - 1, row) == null || coorToIntersec(col - 1,
-	// row).getMark() == mark.other())
-	// if (coorToIntersec(col, row).getMark() == mark.other()
-	// && coorToIntersec(col, row).getLiberties() == 0) {
-	// removeStone(col, row);
-	// if (!(col == 0)) {
-	// updateLiberties(col - 1, row, mark);
-	// }
-	// if (!(col == boardSize - 1)) {
-	// updateLiberties(col + 1, row, mark);
-	// }
-	// if (!(row == 0)) {
-	// updateLiberties(col, row - 1, mark);
-	// }
-	// if (!(row == boardSize - 1)) {
-	// updateLiberties(col, row + 1, mark);
-	// }
-	// }
-	// }
-	// }
-	//
-	// /**
-	// * increases the number of liberties of all neighbouring intersections (that
-	// are
-	// * on the board) by one
-	// */
-	// private void increaseLiberties(int col, int row) {
-	// if (!(col == 0)) {
-	// coorToIntersec(col - 1, row).increaseLib();
-	// }
-	// if (!(col == boardSize - 1)) {
-	// coorToIntersec(col + 1, row).increaseLib();
-	// }
-	// if (!(row == 0)) {
-	// coorToIntersec(col, row - 1).increaseLib();
-	// }
-	// if (!(row == boardSize - 1)) {
-	// coorToIntersec(col, row + 1).increaseLib();
-	// }
-	// }
-	//
-	// /**
-	// * reduces the number of liberties of all neighbouring intersections (that are
-	// * on the board) by one
-	// */
-	// private void reduceLiberties(int col, int row) {
-	// if (!(col == 0)) {
-	// coorToIntersec(col - 1, row).reduceLib();
-	// }
-	// if (!(col == boardSize - 1)) {
-	// coorToIntersec(col + 1, row).reduceLib();
-	// }
-	// if (!(row == 0)) {
-	// coorToIntersec(col, row - 1).reduceLib();
-	// }
-	// if (!(row == boardSize - 1)) {
-	// coorToIntersec(col, row + 1).reduceLib();
-	// }
-	// }
-	//
-	// /**
-	// * Check whether any neighbouring stones (in the same chain) are out of
-	// * liberties and remove the stones (the whole chain or none) that have no
-	// * liberties anymore
-	// */
-	// private void noLiberties(int col, int row, Mark mark) {
-	// System.out.println("RECURSION: now looking at col " + col + " and row " + row
-	// + " with a "
-	// + coorToIntersec(col, row).getMark() + " stone of " + coorToIntersec(col,
-	// row).getLiberties()
-	// + " liberties");
-	// if (coorToIntersec(col, row).getMark() == mark.other() && coorToIntersec(col,
-	// row).getLiberties() == 0) {
-	// removeStone(col, row);
-	// if (!(col == 0)) {
-	// noLiberties(col - 1, row, mark);
-	// }
-	// if (!(col == boardSize - 1)) {
-	// noLiberties(col + 1, row, mark);
-	// }
-	// if (!(row == 0)) {
-	// noLiberties(col, row - 1, mark);
-	// }
-	// if (!(row == boardSize - 1)) {
-	// noLiberties(col, row + 1, mark);
-	// }
-	// }
-	// }
-	//
+// /**
+// * Check how many unoccupied neighbouring intersections the stone (chain) has
+// * and update the number of liberties of all stones in the chain
+// *
+// * If
+// */
+// private void updateLiberties(int col, int row, Mark mark) {// (Intersec
+// intersec) {
+// System.out.println("RECURSION: now counting lib of col " + col + " and row "
+// + row + " with a "
+// + coorToIntersec(col, row).getMark() + " stone of " + coorToIntersec(col,
+// row).getLiberties()
+// + " liberties");
+//
+// Intersec intersec = coorToIntersec(col, row);
+//
+// for (Intersec neighbour : intersec.getNeighbours()) {
+// if (neighbour.getMark() == Mark.U) {
+//
+// }
+// }
+//
+// if (coorToIntersec(col, row).getMark() == mark.U) {
+// coorToIntersec(col, row).increaseLib();
+// if (coorToIntersec(col - 1, row) == null || coorToIntersec(col - 1,
+// row).getMark() == mark.other())
+// if (coorToIntersec(col, row).getMark() == mark.other()
+// && coorToIntersec(col, row).getLiberties() == 0) {
+// removeStone(col, row);
+// if (!(col == 0)) {
+// updateLiberties(col - 1, row, mark);
+// }
+// if (!(col == boardSize - 1)) {
+// updateLiberties(col + 1, row, mark);
+// }
+// if (!(row == 0)) {
+// updateLiberties(col, row - 1, mark);
+// }
+// if (!(row == boardSize - 1)) {
+// updateLiberties(col, row + 1, mark);
+// }
+// }
+// }
+// }
+//
+// /**
+// * increases the number of liberties of all neighbouring intersections (that
+// are
+// * on the board) by one
+// */
+// private void increaseLiberties(int col, int row) {
+// if (!(col == 0)) {
+// coorToIntersec(col - 1, row).increaseLib();
+// }
+// if (!(col == boardSize - 1)) {
+// coorToIntersec(col + 1, row).increaseLib();
+// }
+// if (!(row == 0)) {
+// coorToIntersec(col, row - 1).increaseLib();
+// }
+// if (!(row == boardSize - 1)) {
+// coorToIntersec(col, row + 1).increaseLib();
+// }
+// }
+//
+// /**
+// * reduces the number of liberties of all neighbouring intersections (that are
+// * on the board) by one
+// */
+// private void reduceLiberties(int col, int row) {
+// if (!(col == 0)) {
+// coorToIntersec(col - 1, row).reduceLib();
+// }
+// if (!(col == boardSize - 1)) {
+// coorToIntersec(col + 1, row).reduceLib();
+// }
+// if (!(row == 0)) {
+// coorToIntersec(col, row - 1).reduceLib();
+// }
+// if (!(row == boardSize - 1)) {
+// coorToIntersec(col, row + 1).reduceLib();
+// }
+// }
+//
+// /**
+// * Check whether any neighbouring stones (in the same chain) are out of
+// * liberties and remove the stones (the whole chain or none) that have no
+// * liberties anymore
+// */
+// private void noLiberties(int col, int row, Mark mark) {
+// System.out.println("RECURSION: now looking at col " + col + " and row " + row
+// + " with a "
+// + coorToIntersec(col, row).getMark() + " stone of " + coorToIntersec(col,
+// row).getLiberties()
+// + " liberties");
+// if (coorToIntersec(col, row).getMark() == mark.other() && coorToIntersec(col,
+// row).getLiberties() == 0) {
+// removeStone(col, row);
+// if (!(col == 0)) {
+// noLiberties(col - 1, row, mark);
+// }
+// if (!(col == boardSize - 1)) {
+// noLiberties(col + 1, row, mark);
+// }
+// if (!(row == 0)) {
+// noLiberties(col, row - 1, mark);
+// }
+// if (!(row == boardSize - 1)) {
+// noLiberties(col, row + 1, mark);
+// }
+// }
+// }
+//
 }
