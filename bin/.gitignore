@@ -1,6 +1,3 @@
-/client/
-/exceptions/
-/game/
-/gui/
-/protocol/
 /server/
+/client/
+/protocol/

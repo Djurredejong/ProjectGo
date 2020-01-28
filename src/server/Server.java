@@ -180,13 +180,6 @@ public class Server implements Runnable {
 	}
 
 	/**
-	 * Provides the protocol-defined handshake the Server should give.
-	 */
-	public String getHello() {
-		return ProtocolMessages.HANDSHAKE + ProtocolMessages.DELIMITER + "version" + ProtocolMessages.DELIMITER;
-	}
-
-	/**
 	 * Called by a ClientHandler when the player it represents wants to do this
 	 * move; does the provided move on the board.
 	 */
@@ -203,7 +196,7 @@ public class Server implements Runnable {
 	 * Called by a ClientHandler when the player it represents passes.
 	 */
 	public synchronized String doPass(String cmd) {
-		return "doPss Method";
+		return "doPass Method";
 	}
 
 	/**

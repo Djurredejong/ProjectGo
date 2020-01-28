@@ -39,7 +39,7 @@ public class ClientHandler implements Runnable {
 	 * Set to true as soon as two players are connected to the game that this
 	 * ClientHandler plays on.
 	 */
-	boolean twoPlayers = false;
+	volatile boolean twoPlayers = false;
 
 	/**
 	 * Colour of the player represented by this ClientHandler.
@@ -69,40 +69,15 @@ public class ClientHandler implements Runnable {
 	 * to the handleCommand(String msg) method.
 	 */
 	public void run() {
-		String msg;
 		try {
 			try {
-				// first the client needs to send the handshake
-				msg = in.readLine();
-				System.out.println("> [" + name + "] Incoming: " + msg);
-				if (msg.charAt(0) == ProtocolMessages.HANDSHAKE) {
-					out.write(srv.getHello());
-					out.newLine();
-					out.flush();
-				} else {
-					throw new ProtocolException("No handshake received from " + name);
-				}
-
+				doHandshake();
 				System.out.println(name + " will wait for the game to start");
-				// wait for the game to be start-ready, then send Start to clients
-
-//				try {
-//					this.wait();
-//				} catch (InterruptedException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-
 				while (!twoPlayers) {
 					// wait
 				}
-
-				System.out.println("Informing " + name + " that the game will start!");
-				out.write(ProtocolMessages.GAME + ProtocolMessages.DELIMITER + this.game.getBoard()
-						+ ProtocolMessages.DELIMITER + this.color);
-				out.newLine();
-				out.flush();
-
+				sendStart();
+				String msg;
 				msg = in.readLine();
 				while (msg != null) {
 					System.out.println("> [" + name + "] Incoming: " + msg);
@@ -161,6 +136,26 @@ public class ClientHandler implements Runnable {
 	 * Send to the client that the game starts, according to the protocol
 	 */
 	public void sendStart() throws IOException {
+		out.write(ProtocolMessages.GAME + ProtocolMessages.DELIMITER + this.game.getBoard() + ProtocolMessages.DELIMITER
+				+ this.color);
+		out.newLine();
+		out.flush();
+	}
+
+	/**
+	 * Responds to the client's handshake, according to the protocol
+	 */
+	private void doHandshake() throws IOException, ProtocolException {
+		String msg = in.readLine();
+		System.out.println("> [" + name + "] Incoming: " + msg);
+		if (msg.charAt(0) == ProtocolMessages.HANDSHAKE) {
+			out.write(ProtocolMessages.HANDSHAKE + ProtocolMessages.DELIMITER + "1.0" + ProtocolMessages.DELIMITER
+					+ "Welcome to the game!");
+			out.newLine();
+			out.flush();
+		} else {
+			throw new ProtocolException("No handshake received from " + name);
+		}
 	}
 
 	/**

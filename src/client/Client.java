@@ -97,8 +97,7 @@ public class Client {
 	}
 
 	/**
-	 * Sends a message to the connected server, followed by a new line. The stream
-	 * is then flushed.
+	 * Sends a message to the connected server, followed by a new line.
 	 */
 	public void sendMessage(String msg) throws ServerUnavailableException {
 		if (out != null) {
@@ -108,15 +107,15 @@ public class Client {
 				out.flush();
 			} catch (IOException e) {
 				view.showMessage(e.getMessage());
-				throw new ServerUnavailableException("Could not write " + "to server.");
+				throw new ServerUnavailableException("Could not write to server.");
 			}
 		} else {
-			throw new ServerUnavailableException("Could not write " + "to server.");
+			throw new ServerUnavailableException("Could not write to server.");
 		}
 	}
 
 	/**
-	 * Reads and returns one line from the server.
+	 * Reads and returns a line from the server.
 	 */
 	public String readLineFromServer() throws ServerUnavailableException {
 		if (in != null) {
@@ -124,14 +123,14 @@ public class Client {
 				// Read and return answer from Server
 				String answer = in.readLine();
 				if (answer == null) {
-					throw new ServerUnavailableException("Could not read " + "from server.");
+					throw new ServerUnavailableException("Could not read from server.");
 				}
 				return answer;
 			} catch (IOException e) {
-				throw new ServerUnavailableException("Could not read " + "from server.");
+				throw new ServerUnavailableException("Could not read from server.");
 			}
 		} else {
-			throw new ServerUnavailableException("Could not read " + "from server.");
+			throw new ServerUnavailableException("Could not read from server.");
 		}
 	}
 
@@ -139,12 +138,10 @@ public class Client {
 	 * Handles the server-client handshake as described in the protocol.
 	 */
 	public void handleHello() throws ServerUnavailableException, ProtocolException {
-		this.sendMessage(String.valueOf(ProtocolMessages.HANDSHAKE + ProtocolMessages.DELIMITER +
-		// requestedVersion + ProtocolMessages.DELIMITER +
-				this.myName));
+		this.sendMessage(String.valueOf(ProtocolMessages.HANDSHAKE + ProtocolMessages.DELIMITER + "1.0"
+				+ ProtocolMessages.DELIMITER + this.myName + ProtocolMessages.DELIMITER + ProtocolMessages.BLACK));
 		String line = this.readLineFromServer();
 		String[] lineSplit = line.split(ProtocolMessages.DELIMITER);
-
 		if (lineSplit[0] == null || !lineSplit[0].contentEquals(String.valueOf(ProtocolMessages.HANDSHAKE))) {
 			throw new ProtocolException("Error: server did not give the handshake");
 		} else {
@@ -152,7 +149,7 @@ public class Client {
 				throw new ProtocolException("Error: server did not send the version");
 			} else {
 				view.showMessage("The version of the protocol is: " + lineSplit[1]);
-				if (!(lineSplit.length > 2) || lineSplit[2] != null) {
+				if (!(lineSplit.length > 2) || lineSplit[2] == null) {
 					view.showMessage("Server did not provide a welcome message. Welcome anyway!");
 				} else {
 					view.showMessage(lineSplit[2]);
@@ -166,20 +163,14 @@ public class Client {
 	 */
 	public void waitForStart() throws ServerUnavailableException, ProtocolException {
 		view.showMessage("Waiting for the start of the game...");
-
-		System.out.println("NB. going to read line from server");
 		String line = this.readLineFromServer();
-		System.out.println("NB. line read: " + line);
-
 		String[] lineSplit = line.split(ProtocolMessages.DELIMITER);
-
 		if (lineSplit[0] == null || !lineSplit[0].contentEquals(String.valueOf(ProtocolMessages.GAME))) {
 			throw new ProtocolException("Error: server gave another command than the one for starting a game");
 		} else {
 			if (!(lineSplit.length > 1) || lineSplit[1] == null) {
 				throw new ProtocolException("Error: server did not send the board");
 			} else {
-				view.showMessage("The state of the board is: " + lineSplit[1]);
 				this.boardSize = lineSplit[1].length();
 				view.showMessage("The size of the board is: " + boardSize);
 				if (!(lineSplit.length > 2) || lineSplit[2] == null) {
@@ -196,10 +187,8 @@ public class Client {
 	 * the server. Then waits for and reads the response from the server.
 	 */
 	public void doMove(int intersection) throws ServerUnavailableException {
-		// TODO check if move is valid
 		this.sendMessage(String.valueOf(ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + intersection));
 		String line = this.readLineFromServer();
-		// TODO update board accordingly
 		view.showMessage("> " + line);
 	}
 
@@ -210,7 +199,6 @@ public class Client {
 	public void doPass() throws ServerUnavailableException {
 		this.sendMessage(String.valueOf(ProtocolMessages.PASS));
 		String line = this.readLineFromServer();
-		// TODO update board accordingly
 		view.showMessage("> " + line);
 	}
 
