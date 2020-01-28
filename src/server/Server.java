@@ -81,23 +81,19 @@ public class Server implements Runnable {
 
 					// TODO check clients list for two connected clients that are not yet in a game
 					if (secondPlayer) {
+						view.showMessage(clients.get(nextClientNo - 2).getName() + " and "
+								+ clients.get(nextClientNo - 1).getName() + " will play against each other!");
 						// two players have connected, start a new Game!
-						Game game = new Game(clients.get(nextClientNo - 2), clients.get(nextClientNo - 1), boardSize);
+						Game game = new Game();
 						games.add(game);
-
 						// give the ClientHandlers a color, first player is always black
 						clients.get(nextClientNo - 2).setColor(ProtocolMessages.BLACK);
 						clients.get(nextClientNo - 1).setColor(ProtocolMessages.WHITE);
-
 						// let the ClientHandlers know the Game they are playing on!
 						clients.get(nextClientNo - 2).setGame(games.get(games.size() - 1));
 						clients.get(nextClientNo - 1).setGame(games.get(games.size() - 1));
-
 						// wake up the ClientHandlers that will play in the new game
-						// by setting their boolean twoPlayer values to true
-						view.showMessage(clients.get(nextClientNo - 2).getName() + " and "
-								+ clients.get(nextClientNo - 1).getName() + " will play against each other!");
-
+						// by setting the volatile boolean twoPlayer value to true
 						clients.get(nextClientNo - 2).setTwoPlayers(true);
 						clients.get(nextClientNo - 1).setTwoPlayers(true);
 					}
