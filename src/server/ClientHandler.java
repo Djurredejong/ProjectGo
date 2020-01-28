@@ -8,73 +8,46 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 //import java.net.SocketException;
 
-import exceptions.*;
-import protocol.*;
+import exceptions.ProtocolException;
 import game.Game;
+import protocol.ProtocolMessages;
 
 /**
- * Handles the communication with one client. 
+ * Handles the communication with one client.
  */
 public class ClientHandler implements Runnable {
 
-	/** The socket and In- and OutputStreams */
+	/**
+	 * The server, socket and in- and outputStreams.
+	 */
+	private Server srv;
 	private BufferedReader in;
 	private BufferedWriter out;
 	private Socket sock;
 
-	/** The connected Server */
-	private Server srv;
-
-	/** Name of this ClientHandler and getter */
+	/**
+	 * Name of this ClientHandler and getter.
+	 */
 	private String name;
-	public String getName() {
-		return this.name;
-	}
 
-	/** The game this ClientHandler plays on, and getter+setter */
+	/**
+	 * The game this ClientHandler plays on.
+	 */
 	private Game game;
-	public Game getGame() {
-		return game;
-	}
-	public void setGame(Game game) {
-		this.game = game;
-	}
-	
-	/** Are there already two players connected to the game of this player */
-	boolean twoPlayers = false;
-	public void setTwoPlayers(boolean twoPlayers) {
-		this.twoPlayers = twoPlayers;
-	}
 
-	/** 
-	 * Color of the player represented by this ClientHandler
-	 * With getter+setter and method to change char to String
+	/**
+	 * Set to true as soon as two players are connected to the game that this
+	 * ClientHandler plays on.
+	 */
+	boolean twoPlayers = false;
+
+	/**
+	 * Colour of the player represented by this ClientHandler.
 	 */
 	private char color;
-	public char getColor() {
-		return color;
-	}
-	public void setColor(char color) {
-		this.color = color;
-	}
-	public String colorString(char color) {
-		if (color == ProtocolMessages.BLACK) {
-			return "Black";
-		}
-		else if (color == ProtocolMessages.WHITE) {
-			return "White";
-		}
-		else {
-			return "No color!";
-		}
-	}
 
 	/**
 	 * Constructs a new ClientHandler. Opens the In- and OutputStreams.
-	 * 
-	 * @param sock The client socket
-	 * @param srv  The connected server
-	 * @param name The name of this ClientHandler
 	 */
 	public ClientHandler(Socket sock, Server srv, String name) {
 		try {
@@ -90,41 +63,46 @@ public class ClientHandler implements Runnable {
 	}
 
 	/**
-	 * Continuously listens to client input and forwards the input to the
-	 * handleCommand(String msg) method.
+	 * First handle the Handshake as defined in the protocol. Then wait for the sign
+	 * of the Server that there are two players assigned to a game and the game will
+	 * start. After that, continuously listen to client input and forward that input
+	 * to the handleCommand(String msg) method.
 	 */
-	public synchronized void run() {
+	public void run() {
 		String msg;
 		try {
 			try {
-				//first the client needs to send the handshake
+				// first the client needs to send the handshake
 				msg = in.readLine();
 				System.out.println("> [" + name + "] Incoming: " + msg);
 				if (msg.charAt(0) == ProtocolMessages.HANDSHAKE) {
 					out.write(srv.getHello());
 					out.newLine();
 					out.flush();
-				}
-				else {
+				} else {
 					throw new ProtocolException("No handshake received from " + name);
 				}
-				
+
 				System.out.println(name + " will wait for the game to start");
-				//wait for the game to be start-ready, then send Start to clients
-				//while (!twoPlayers) {
-					try {
-						this.wait();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				//}
+				// wait for the game to be start-ready, then send Start to clients
+
+//				try {
+//					this.wait();
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+
+				while (!twoPlayers) {
+					// wait
+				}
+
 				System.out.println("Informing " + name + " that the game will start!");
-				out.write(ProtocolMessages.GAME + ProtocolMessages.DELIMITER + 
-						this.game.getBoard() + ProtocolMessages.DELIMITER + this.color);
+				out.write(ProtocolMessages.GAME + ProtocolMessages.DELIMITER + this.game.getBoard()
+						+ ProtocolMessages.DELIMITER + this.color);
 				out.newLine();
 				out.flush();
-				
+
 				msg = in.readLine();
 				while (msg != null) {
 					System.out.println("> [" + name + "] Incoming: " + msg);
@@ -135,87 +113,59 @@ public class ClientHandler implements Runnable {
 				}
 				System.out.println("Shutting down");
 				shutdown();
-			}
-			catch (ProtocolException e) {
-				//in case of a ProtocolException, disconnect the client
-				out.write(ProtocolMessages.INVALID + ProtocolMessages.DELIMITER 
+			} catch (ProtocolException e) {
+				// in case of a ProtocolException, disconnect the client
+				out.write(ProtocolMessages.INVALID + ProtocolMessages.DELIMITER
 						+ "You did not adhere to the protocol, goodbye!");
 				System.out.println(name + " did not adhere to the protocol, I will disconnect " + name);
 				shutdown();
 			}
 		} catch (IOException e) {
-			//This happens purposely
+			// This happens purposely
 			System.out.println("Goodbye!");
 			shutdown();
-		} 
+		}
 	}
 
+	/**
+	 * Handles commands received from the client by calling the according methods
+	 * via the Server.
+	 */
+	private void handleCommand(String msg) throws IOException, ProtocolException {
+
+		if (msg.charAt(0) == ProtocolMessages.MOVE) {
+			String[] msgSplit = msg.split(ProtocolMessages.DELIMITER);
+			if (msgSplit.length > 1 && msgSplit[1] != null && isInteger(msgSplit[1])) {
+				// if
+				// (srv.getGames().get(srv.getGames().indexOf(this.game)).getBoard().isValidMove(Integer.parseInt(msgSplit[1])))
+				// {
+				if (this.game.getBoard().isValidMove(Integer.parseInt(msgSplit[1]))) {
+					this.srv.doMove(this, Integer.parseInt(msgSplit[1]));
+					out.write(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + ProtocolMessages.VALID
+							+ ProtocolMessages.DELIMITER + this.game.getBoard());
+				} else {
+					throw new ProtocolException("You did not send me a valid move!");
+				}
+			} else {
+				throw new ProtocolException("You did not send me a move!");
+			}
+		}
+
+		// apparently, the received message does not correspond to the protocol
+		else {
+			throw new ProtocolException("You did not send me a valid command!");
+		}
+	}
 
 	/**
 	 * Send to the client that the game starts, according to the protocol
-	 * @throws IOException 
 	 */
 	public void sendStart() throws IOException {
 	}
 
 	/**
-	 * Handles commands received from the client by calling the according 
-	 * methods via the Server.
-	 * 
-	 * @param msg Message from client
-	 * @throws ProtocolException 
-	 */
-	private void handleCommand(String msg) throws IOException, ProtocolException {
-
-		//if the received message is a move
-		if (msg.charAt(0) == ProtocolMessages.MOVE) {
-			String[] msgSplit = msg.split(ProtocolMessages.DELIMITER);
-			if (msgSplit.length > 1 && msgSplit[1] != null && isInteger(msgSplit[1], 10)) {
-				//if (srv.getGames().get(srv.getGames().indexOf(this.game)).getBoard().isValidMove(Integer.parseInt(msgSplit[1]))) {
-				if (this.game.getBoard().isValidMove(Integer.parseInt(msgSplit[1]))) {
-					this.srv.doMove(this, Integer.parseInt(msgSplit[1]));
-					out.write(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + 
-							ProtocolMessages.VALID + ProtocolMessages.DELIMITER + this.game.getBoard());
-				}
-				else {
-					throw new ProtocolException("You did not send me a valid move!");
-				}
-			}
-			else {
-				throw new ProtocolException("You did not send me a move!");
-			}					
-		}
-
-		//apparently, the received message does not correspond to the protocol
-		else {
-
-		}		
-	}
-
-	/**
-	 * Checks whether the provided String is parsable to int
-	 * 
-	 * @param s to check
-	 * @param radix 10 for decimal numbers
-	 * @return true if parsable
-	 */
-	private boolean isInteger(String s, int radix) {
-		if (s.isEmpty()) return false;
-		for(int i = 0; i < s.length(); i++) {
-			if(i == 0 && s.charAt(i) == '-') {
-				if(s.length() == 1) return false;
-				else continue;
-			}
-			if (Character.digit(s.charAt(i),radix) < 0) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Shut down the connection to this client by closing the socket and 
-	 * the In- and OutputStreams.
+	 * Shut down the connection to this client by closing the socket and the In- and
+	 * OutputStreams.
 	 */
 	private void shutdown() {
 		System.out.println("> [" + name + "] Shutting down.");
@@ -229,5 +179,79 @@ public class ClientHandler implements Runnable {
 		srv.removeClient(this);
 	}
 
-}
+	/**
+	 * Getter method for the name of this ClientHandler.
+	 */
+	public String getName() {
+		return this.name;
+	}
 
+	/**
+	 * Getter method for the game this ClientHandler plays on.
+	 */
+	public Game getGame() {
+		return game;
+	}
+
+	/**
+	 * Setter method for the game this ClientHandler plays on.
+	 */
+	public void setGame(Game game) {
+		this.game = game;
+	}
+
+	/**
+	 * Setter method for the twoPlayers boolean.
+	 */
+	public void setTwoPlayers(boolean twoPlayers) {
+		this.twoPlayers = twoPlayers;
+	}
+
+	/**
+	 * Getter method for the colour of this ClientHandler.
+	 */
+	public char getColor() {
+		return color;
+	}
+
+	/**
+	 * Setter method for the colour of this ClientHandler.
+	 */
+	public void setColor(char color) {
+		this.color = color;
+	}
+
+	/**
+	 * Return the colour of this ClientHandler as a String.
+	 */
+	public String colorString(char color) {
+		if (color == ProtocolMessages.BLACK) {
+			return "Black";
+		} else if (color == ProtocolMessages.WHITE) {
+			return "White";
+		} else {
+			return "No color!";
+		}
+	}
+
+	/**
+	 * Checks whether the provided String is parsable to a (decimal) integer.
+	 */
+	private boolean isInteger(String s) {
+		if (s.isEmpty())
+			return false;
+		for (int i = 0; i < s.length(); i++) {
+			if (i == 0 && s.charAt(i) == '-') {
+				if (s.length() == 1)
+					return false;
+				else
+					continue;
+			}
+			if (Character.digit(s.charAt(i), 10) < 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+}
