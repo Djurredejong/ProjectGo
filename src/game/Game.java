@@ -1,6 +1,7 @@
 package game;
 
 import exceptions.ExitProgram;
+import server.ClientHandler;
 
 //import server.ClientHandler;
 
@@ -31,6 +32,10 @@ public class Game {
 		players[0] = player1;
 		players[1] = player2;
 		current = 0;
+	}
+
+	public Game(ClientHandler clientHandler, ClientHandler clientHandler2, int boardSize) {
+		// TODO Auto-generated constructor stub
 	}
 
 	/**
