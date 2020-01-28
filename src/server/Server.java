@@ -79,8 +79,7 @@ public class Server implements Runnable {
 					new Thread(handler).start();
 					clients.add(handler);
 
-					// TODO look in list of clients if there are two connected clients not yet in a
-					// game
+					// TODO check clients list for two connected clients that are not yet in a game
 					if (secondPlayer) {
 						// two players have connected, start a new Game!
 						Game game = new Game(clients.get(nextClientNo - 2), clients.get(nextClientNo - 1), boardSize);
@@ -101,21 +100,8 @@ public class Server implements Runnable {
 
 						clients.get(nextClientNo - 2).setTwoPlayers(true);
 						clients.get(nextClientNo - 1).setTwoPlayers(true);
-
-						while (true) {
-							// while the game is not over yet
-							try {
-								Thread.sleep(1000);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						// clients.get(nextClientNo - 2).notify();
-						// clients.get(nextClientNo - 1).notify();
-						// start the game play
-						// game.startPlay();
 					}
+					// game.startPlay();
 				}
 
 			} catch (ExitProgram ep) {
@@ -129,6 +115,7 @@ public class Server implements Runnable {
 			}
 		}
 		view.showMessage("See you later!");
+
 	}
 
 	/**

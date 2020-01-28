@@ -31,6 +31,11 @@ public class ClientHandler implements Runnable {
 	private String name;
 
 	/**
+	 * The player that this ClientHandler represents.
+	 */
+	// private Player player;
+
+	/**
 	 * The game this ClientHandler plays on.
 	 */
 	private Game game;
@@ -72,7 +77,6 @@ public class ClientHandler implements Runnable {
 		try {
 			try {
 				doHandshake();
-				System.out.println(name + " will wait for the game to start");
 				while (!twoPlayers) {
 					// wait
 				}
@@ -92,7 +96,7 @@ public class ClientHandler implements Runnable {
 				// in case of a ProtocolException, disconnect the client
 				out.write(ProtocolMessages.INVALID + ProtocolMessages.DELIMITER
 						+ "You did not adhere to the protocol, goodbye!");
-				System.out.println(name + " did not adhere to the protocol, I will disconnect " + name);
+				System.out.println(name + " did not adhere to the protocol, disconnect " + name);
 				shutdown();
 			}
 		} catch (IOException e) {
@@ -150,7 +154,7 @@ public class ClientHandler implements Runnable {
 		System.out.println("> [" + name + "] Incoming: " + msg);
 		if (msg.charAt(0) == ProtocolMessages.HANDSHAKE) {
 			out.write(ProtocolMessages.HANDSHAKE + ProtocolMessages.DELIMITER + "1.0" + ProtocolMessages.DELIMITER
-					+ "Welcome to the game!");
+					+ "Welcome to this server that will let you play go.");
 			out.newLine();
 			out.flush();
 		} else {

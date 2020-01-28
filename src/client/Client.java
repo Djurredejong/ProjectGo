@@ -120,7 +120,6 @@ public class Client {
 	public String readLineFromServer() throws ServerUnavailableException {
 		if (in != null) {
 			try {
-				// Read and return answer from Server
 				String answer = in.readLine();
 				if (answer == null) {
 					throw new ServerUnavailableException("Could not read from server.");
@@ -162,7 +161,6 @@ public class Client {
 	 * Waits for the server to start a new Game with this client and another one.
 	 */
 	public void waitForStart() throws ServerUnavailableException, ProtocolException {
-		view.showMessage("Waiting for the start of the game...");
 		String line = this.readLineFromServer();
 		String[] lineSplit = line.split(ProtocolMessages.DELIMITER);
 		if (lineSplit[0] == null || !lineSplit[0].contentEquals(String.valueOf(ProtocolMessages.GAME))) {
@@ -171,12 +169,13 @@ public class Client {
 			if (!(lineSplit.length > 1) || lineSplit[1] == null) {
 				throw new ProtocolException("Error: server did not send the board");
 			} else {
+				view.showMessage("We will start a game.");
 				this.boardSize = lineSplit[1].length();
-				view.showMessage("The size of the board is: " + boardSize);
+				view.showMessage("The amount of intersections on the board will be : " + boardSize + ".");
 				if (!(lineSplit.length > 2) || lineSplit[2] == null) {
 					throw new ProtocolException("Error: server did not provide a color");
 				} else {
-					view.showMessage("Your color is: " + lineSplit[2]);
+					view.showMessage("There are black and white stones. Your colour will be: " + lineSplit[2] + ".");
 				}
 			}
 		}
