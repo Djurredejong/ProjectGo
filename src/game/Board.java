@@ -6,7 +6,6 @@ import java.util.Set;
 import com.nedap.go.gui.GoGUIIntegrator;
 
 import exceptions.ExitProgram;
-import protocol.ProtocolMessages;
 
 public class Board {
 
@@ -348,24 +347,6 @@ public class Board {
 		} else {
 			this.boardSituations.add(boardSituation);
 		}
-	}
-
-	// ------------------- Methods for communicating -----------------------------//
-
-	/**
-	 * Checks whether a String represents a possible board situation.
-	 */
-	public boolean checkValidBoard(String board) {
-		if (board.length() != boardSize * boardSize) {
-			return false;
-		}
-		for (int i = 0; i < board.length(); i++) {
-			if (board.charAt(i) != ProtocolMessages.BLACK || board.charAt(i) != ProtocolMessages.WHITE
-					|| board.charAt(i) != ProtocolMessages.UNOCCUPIED) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	/**

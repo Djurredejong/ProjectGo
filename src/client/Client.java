@@ -12,6 +12,11 @@ import java.net.Socket;
 import exceptions.ExitProgram;
 import exceptions.ProtocolException;
 import exceptions.ServerUnavailableException;
+import game.Board;
+import game.ComputerPlayer;
+import game.HumanPlayer;
+import game.Mark;
+import game.Player;
 import protocol.ProtocolMessages;
 
 /**
@@ -37,22 +42,53 @@ public class Client {
 	private String myName;
 
 	/**
+	 * The player that this Client is.
+	 */
+	private Player player;
+
+	/**
+	 * The mark (colour) of this player, either B or W.
+	 */
+	private Mark mark;
+
+	/**
 	 * The size of the board that is being played on.
 	 */
 	private int boardSize;
 
 	/**
+	 * The board this game is played in.
+	 */
+	private Board board;
+
+	/**
 	 * Constructs a new Client. Initialises the view.
+	 * 
+	 * @throws ExitProgram
 	 */
 	public Client() {
 		view = new ClientTUI(this);
+		try {
+			this.myName = view.getString("What should be your name/the name of your AI player?");
+			if (view.getBoolean("Do you want to start an AI player?(y/n)")) {
+				this.player = new ComputerPlayer(myName, mark);
+			} else {
+				this.player = new HumanPlayer(myName, mark);
+			}
+		} catch (ExitProgram e) {
+			view.showMessage(e + " I will now disconnect.");
+			closeConnection();
+		}
 	}
 
 	/**
 	 * Starts a new Client by creating a connection, followed by the Handshake as
-	 * defined in the protocol. After a successful connection and handshake, the
-	 * start() method of the view is called, which continuously asks for user input
-	 * and handles all further calls to methods of this class.
+	 * defined in the protocol. The client waits for the start signal of the Server,
+	 * to know the game has started. Then the client continuously reads a message
+	 * from the Server (which should include a move of the opponent, apart of course
+	 * for all the way at the beginning of the game) and determines a move as
+	 * response, which is then send back (and confirmed by another message, which is
+	 * read here as well) to the Server.
 	 */
 	public void start() {
 		try {
@@ -60,10 +96,50 @@ public class Client {
 			System.out.println("Connection to the server created!");
 			this.handleHello();
 			this.waitForStart();
-			view.start();
-		} catch (ExitProgram | ServerUnavailableException | ProtocolException e) {
-			view.showMessage(e + " in Client.start()");
-			e.printStackTrace();
+			this.board = new Board(this.boardSize, true);
+			while (true) {
+				this.handleGameplay();
+				in.readLine();
+				// TODO process the response from the server on my move
+			}
+		} catch (ExitProgram | ServerUnavailableException | ProtocolException | IOException e) {
+			view.showMessage(e + " I will now disconnect.");
+			closeConnection();
+		}
+	}
+
+	/**
+	 * reads a message from the Server (which should include a move of the opponent,
+	 * apart of course for all the way at the beginning of the game) and determines
+	 * a move as response, which is then send back to the Server.
+	 */
+	private void handleGameplay() throws IOException, ProtocolException, ExitProgram, ServerUnavailableException {
+		String line = in.readLine();
+		String[] lineSplit = line.split(ProtocolMessages.DELIMITER);
+		if (lineSplit[0] == null || !(lineSplit[0].contentEquals(String.valueOf(ProtocolMessages.TURN))
+				|| lineSplit[0].contentEquals(String.valueOf(ProtocolMessages.END)))) {
+			throw new ProtocolException("Error: server did not adhere to the protocol");
+		} else {
+			if (lineSplit[0].contentEquals(String.valueOf(ProtocolMessages.TURN))) {
+				if (lineSplit[2] == null || lineSplit[2].contentEquals(String.valueOf(ProtocolMessages.PASS))) {
+					// do nothing to the board
+				} else {
+					int intersec = Integer.parseInt(lineSplit[2]);
+					board.putStone(board.getCol(intersec), board.getRow(intersec), mark.other());
+				}
+				boolean move = this.player.makeMove(board);
+				// TODO give a user the ability to press Q to quit the game
+				if (move) {
+					this.sendMessage(String.valueOf(ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + move));
+				} else {
+					this.sendMessage(
+							String.valueOf(ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + ProtocolMessages.PASS));
+				}
+			} else {
+				if (lineSplit[0].contentEquals(String.valueOf(ProtocolMessages.END))) {
+					// TODO show why game has ended
+				}
+			}
 		}
 	}
 
@@ -176,6 +252,13 @@ public class Client {
 					throw new ProtocolException("Error: server did not provide a color");
 				} else {
 					view.showMessage("There are black and white stones. Your colour will be: " + lineSplit[2] + ".");
+					if (lineSplit[2].charAt(0) == ProtocolMessages.BLACK) {
+						this.mark = Mark.B;
+					} else if (lineSplit[2].charAt(0) == ProtocolMessages.WHITE) {
+						this.mark = Mark.W;
+					} else {
+						throw new ProtocolException("Error: server did not provide a valid color");
+					}
 				}
 			}
 		}
