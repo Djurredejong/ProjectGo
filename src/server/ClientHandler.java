@@ -9,7 +9,6 @@ import java.net.Socket;
 //import java.net.SocketException;
 
 import exceptions.ProtocolException;
-import game.Game;
 import protocol.ProtocolMessages;
 
 /**
@@ -31,23 +30,19 @@ public class ClientHandler implements Runnable {
 	private String name;
 
 	/**
-	 * The player that this ClientHandler represents.
-	 */
-	// private Player player;
-
-	/**
-	 * The game this ClientHandler plays on.
-	 */
-	private Game game;
-
-	/**
 	 * Set to true as soon as two players are connected to the game that this
 	 * ClientHandler plays on.
 	 */
 	volatile boolean twoPlayers = false;
 
 	/**
-	 * Colour of the player represented by this ClientHandler.
+	 * When true, the player with colour white should play; when false, the player
+	 * with colour black should play.
+	 */
+	volatile boolean whiteTurn = false;
+
+	/**
+	 * Colour of the Client's player represented by this ClientHandler.
 	 */
 	private char color;
 
@@ -70,15 +65,15 @@ public class ClientHandler implements Runnable {
 	/**
 	 * First handle the Handshake as defined in the protocol. Then wait for the sign
 	 * of the Server that there are two players assigned to a game and the game will
-	 * start. After that, continuously listen to client input and forward that input
-	 * to the handleCommand(String msg) method.
+	 * start. After that, continuously send the client that it is their turn and the
+	 * last move of the opponent player, listen to their response, and handle it.
 	 */
 	public void run() {
 		try {
 			try {
 				doHandshake();
 				while (!twoPlayers) {
-					// wait
+					// wait for second player
 				}
 				sendStart();
 				String msg;
@@ -100,7 +95,7 @@ public class ClientHandler implements Runnable {
 				shutdown();
 			}
 		} catch (IOException e) {
-			// This happens purposely
+			// this happens purposely
 			System.out.println("Goodbye!");
 			shutdown();
 		}
@@ -121,7 +116,7 @@ public class ClientHandler implements Runnable {
 				// if (this.game.getBoard().isValidMove(Integer.parseInt(msgSplit[1]))) {
 				this.srv.doMove(this, Integer.parseInt(msgSplit[1]));
 				out.write(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + ProtocolMessages.VALID
-						+ ProtocolMessages.DELIMITER + this.game.getBoard());
+						+ ProtocolMessages.DELIMITER + srv.getBoard());
 				// } else {
 				// throw new ProtocolException("You did not send me a valid move!");
 				// }
@@ -140,7 +135,7 @@ public class ClientHandler implements Runnable {
 	 * Send to the client that the game starts, according to the protocol
 	 */
 	public void sendStart() throws IOException {
-		out.write(ProtocolMessages.GAME + ProtocolMessages.DELIMITER + this.game.getBoard() + ProtocolMessages.DELIMITER
+		out.write(ProtocolMessages.GAME + ProtocolMessages.DELIMITER + srv.getBoard() + ProtocolMessages.DELIMITER
 				+ this.color);
 		out.newLine();
 		out.flush();
@@ -186,20 +181,6 @@ public class ClientHandler implements Runnable {
 	}
 
 	/**
-	 * Getter method for the game this ClientHandler plays on.
-	 */
-	public Game getGame() {
-		return game;
-	}
-
-	/**
-	 * Setter method for the game this ClientHandler plays on.
-	 */
-	public void setGame(Game game) {
-		this.game = game;
-	}
-
-	/**
 	 * Setter method for the twoPlayers boolean.
 	 */
 	public void setTwoPlayers(boolean twoPlayers) {
@@ -207,21 +188,14 @@ public class ClientHandler implements Runnable {
 	}
 
 	/**
-	 * Getter method for the colour of this ClientHandler.
-	 */
-	public char getColor() {
-		return color;
-	}
-
-	/**
-	 * Setter method for the colour of this ClientHandler.
+	 * Setter method for the colour associated with this ClientHandler.
 	 */
 	public void setColor(char color) {
 		this.color = color;
 	}
 
 	/**
-	 * Return the colour of this ClientHandler as a String.
+	 * Return the colour associated with this ClientHandler as a String.
 	 */
 	public String colorString(char color) {
 		if (color == ProtocolMessages.BLACK) {

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import exceptions.ExitProgram;
-import game.Game;
+import game.Board;
 import protocol.ProtocolMessages;
 
 public class Server implements Runnable {
@@ -40,9 +40,10 @@ public class Server implements Runnable {
 	private int boardSize;
 
 	/**
-	 * List of Games that are played on this server.
+	 * The board of the game that is being played on this server. TODO change to
+	 * List of Boards, such that multiple games can be played on this server.
 	 */
-	private List<Game> games;
+	private Board board;
 
 	/**
 	 * Constructs a new Server. Initialises the clients list, the games list, the
@@ -50,7 +51,6 @@ public class Server implements Runnable {
 	 */
 	public Server() {
 		clients = new ArrayList<>();
-		games = new ArrayList<>();
 		view = new ServerTUI();
 		nextClientNo = 0;
 	}
@@ -84,14 +84,10 @@ public class Server implements Runnable {
 						view.showMessage(clients.get(nextClientNo - 2).getName() + " and "
 								+ clients.get(nextClientNo - 1).getName() + " will play against each other!");
 						// two players have connected, start a new Game!
-						Game game = new Game();
-						games.add(game);
-						// give the ClientHandlers a color, first player is always black
+						this.board = new Board(this.boardSize, false);
+						// give the ClientHandlers a colour, first player is always black
 						clients.get(nextClientNo - 2).setColor(ProtocolMessages.BLACK);
 						clients.get(nextClientNo - 1).setColor(ProtocolMessages.WHITE);
-						// let the ClientHandlers know the Game they are playing on!
-						clients.get(nextClientNo - 2).setGame(games.get(games.size() - 1));
-						clients.get(nextClientNo - 1).setGame(games.get(games.size() - 1));
 						// wake up the ClientHandlers that will play in the new game
 						// by setting the volatile boolean twoPlayer value to true
 						clients.get(nextClientNo - 2).setTwoPlayers(true);
@@ -155,14 +151,6 @@ public class Server implements Runnable {
 	}
 
 	/**
-	 * Removes a game from the games list. Gets called in the shutdown() method of
-	 * Game.
-	 */
-	public void removeGame(Game game) {
-		this.games.remove(game);
-	}
-
-	/**
 	 * Called by a ClientHandler when the player it represents wants to do this
 	 * move; does the provided move on the board.
 	 */
@@ -183,17 +171,17 @@ public class Server implements Runnable {
 	}
 
 	/**
+	 * Getter method for the board of the game being played on this server.
+	 */
+	public Board getBoard() {
+		return board;
+	}
+
+	/**
 	 * Getter method for the board size of the games being played on this server.
 	 */
 	public int getBoardSize() {
 		return boardSize;
-	}
-
-	/**
-	 * Getter method for the list of games.
-	 */
-	public List<Game> getGames() {
-		return games;
 	}
 
 	/**
