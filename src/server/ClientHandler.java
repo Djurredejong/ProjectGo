@@ -118,13 +118,13 @@ public class ClientHandler implements Runnable {
 				// if
 				// (srv.getGames().get(srv.getGames().indexOf(this.game)).getBoard().isValidMove(Integer.parseInt(msgSplit[1])))
 				// {
-				if (this.game.getBoard().isValidMove(Integer.parseInt(msgSplit[1]))) {
-					this.srv.doMove(this, Integer.parseInt(msgSplit[1]));
-					out.write(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + ProtocolMessages.VALID
-							+ ProtocolMessages.DELIMITER + this.game.getBoard());
-				} else {
-					throw new ProtocolException("You did not send me a valid move!");
-				}
+				// if (this.game.getBoard().isValidMove(Integer.parseInt(msgSplit[1]))) {
+				this.srv.doMove(this, Integer.parseInt(msgSplit[1]));
+				out.write(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + ProtocolMessages.VALID
+						+ ProtocolMessages.DELIMITER + this.game.getBoard());
+				// } else {
+				// throw new ProtocolException("You did not send me a valid move!");
+				// }
 			} else {
 				throw new ProtocolException("You did not send me a move!");
 			}

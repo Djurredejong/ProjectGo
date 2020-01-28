@@ -172,8 +172,8 @@ public class Server implements Runnable {
 	 */
 	public synchronized String doMove(ClientHandler handler, int move) {
 		// if (handler.getColor() == ProtocolMessages.BLACK) {
-		handler.getGame().move(move);
-		handler.getGame().setCurrent(handler.getGame().getCurrent() % 2);
+		// handler.getGame().move(move);
+		// handler.getGame().setCurrent(handler.getGame().getCurrent() % 2);
 		return "move done";
 		// }
 
