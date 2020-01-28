@@ -221,52 +221,86 @@ public class Board {
 	/**
 	 * After the game has ended (either board full or two consecutive passes in a
 	 * row), the score will be counted by calling this method. For all intersections
-	 * it determines to whose area it belongs (black or white). Then it counts the
-	 * scores of both players by adding up all intersections that belong to only
-	 * them (these include their own stones).
+	 * it determines whether there is a black or white stone, and if so the
+	 * corresponding score is incremented. It also determines to which colour empty
+	 * areas belong. Finally it updates the scores of both players by adding up all
+	 * empty intersections that belong to only their are.
 	 */
 	public void countScore() {
-		whiteScore = 0.5;
 		blackScore = 0;
+		whiteScore = 0.5;
+		scoringBlack();
 		for (int i = 0; i < intersecs.length; i++) {
-			if (intersecs[i].getMark() == Mark.B) {
-				blackArea(intersecs[i]);
-			} else if (intersecs[i].getMark() == Mark.W) {
-				whiteArea(intersecs[i]);
-			}
+			intersecs[i].setChecked(false);
 		}
+		scoringWhite();
 		for (int i = 0; i < intersecs.length; i++) {
 			if (intersecs[i].getAreaColor() == Mark.B) {
 				blackScore = blackScore + 1;
-			}
-			if (intersecs[i].getAreaColor() == Mark.W) {
+			} else if (intersecs[i].getAreaColor() == Mark.W) {
 				whiteScore = whiteScore + 1;
 			}
 		}
 	}
 
 	/**
-	 * Determines which neighbouring intersections of a black stone belong to
-	 * black's area and updates the area indicator of those intersections.
+	 * Gives a point to black for each black stone on the board. Calls the
+	 * areaBlack(Intersec intersec) method on each intersection with a black stone
+	 * on there.
 	 */
-	public void blackArea(Intersec intersec) {
-		for (Intersec neighbour : intersec.getNeighbours()) {
-			if (neighbour.getMark() != Mark.W) {
-				neighbour.setBlackArea();
-				blackArea(neighbour);
+	private void scoringBlack() {
+		for (int i = 0; i < intersecs.length; i++) {
+			if (intersecs[i].getMark() == Mark.B) {
+				blackScore = blackScore + 1;
+				for (Intersec neighbour : intersecs[i].getNeighbours()) {
+					areaBlack(neighbour);
+				}
 			}
 		}
 	}
 
 	/**
-	 * Determines which neighbouring intersections of a black stone belong to
-	 * black's area and updates the area indicator of those intersections.
+	 * Determines for all intersections in an empty area whether they belong to the
+	 * area of black (if so, their blackArea boolean is set to true). This is the
+	 * case when at least one black stone borders this empty area.
 	 */
-	public void whiteArea(Intersec intersec) {
-		for (Intersec neighbour : intersec.getNeighbours()) {
-			if (neighbour.getMark() != Mark.B) {
-				neighbour.setWhiteArea();
-				whiteArea(neighbour);
+	private void areaBlack(Intersec intersec) {
+		if (intersec.getMark() == Mark.U && !intersec.isChecked()) {
+			intersec.setBlackArea(true);
+			intersec.setChecked(true);
+			for (Intersec neighbour : intersec.getNeighbours()) {
+				areaBlack(neighbour);
+			}
+		}
+	}
+
+	/**
+	 * Gives a point to black for each black stone on the board. Calls the
+	 * areaBlack(Intersec intersec) method on each intersection with a black stone
+	 * on there.
+	 */
+	private void scoringWhite() {
+		for (int i = 0; i < intersecs.length; i++) {
+			if (intersecs[i].getMark() == Mark.B) {
+				whiteScore = whiteScore + 1;
+				for (Intersec neighbour : intersecs[i].getNeighbours()) {
+					areaWhite(neighbour);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Determines for all intersections in an empty area whether they belong to the
+	 * area of black (if so, their blackArea boolean is set to true). This is the
+	 * case when at least one black stone borders this empty area.
+	 */
+	private void areaWhite(Intersec intersec) {
+		if (intersec.getMark() == Mark.U && !intersec.isChecked()) {
+			intersec.setWhiteArea(true);
+			intersec.setChecked(true);
+			for (Intersec neighbour : intersec.getNeighbours()) {
+				areaWhite(neighbour);
 			}
 		}
 	}
@@ -277,7 +311,8 @@ public class Board {
 	 */
 	public boolean determineWinner() {
 		countScore();
-		System.out.println("white's score is " + whiteScore + ", black's score is " + blackScore);
+		System.out.println(
+				"The score has been counted! White's score is " + whiteScore + ", black's score is " + blackScore);
 		return (whiteScore > blackScore);
 	}
 

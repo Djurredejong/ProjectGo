@@ -57,6 +57,11 @@ public class Intersec {
 	private boolean whiteArea;
 
 	/**
+	 * True if this intersection has been checked in determining the score.
+	 */
+	private boolean checked;
+
+	/**
 	 * Creates a new intersection. Initialises the column and row. This intersection
 	 * is unoccupied, does hence not belong to any chain. The neighbour list and
 	 * liberties set get initialised by the method calling this (the constructor of
@@ -159,15 +164,15 @@ public class Intersec {
 	/**
 	 * This stone belongs to the area of black when this method is called.
 	 */
-	public void setBlackArea() {
-		this.blackArea = true;
+	public void setBlackArea(boolean bool) {
+		this.blackArea = bool;
 	}
 
 	/**
 	 * This stone belongs to the area of white when this method is called.
 	 */
-	public void setWhiteArea() {
-		this.whiteArea = true;
+	public void setWhiteArea(boolean bool) {
+		this.whiteArea = bool;
 	}
 
 	/**
@@ -187,6 +192,20 @@ public class Intersec {
 			}
 		}
 		return Mark.U;
+	}
+
+	/**
+	 * Getter method for the checked boolean.
+	 */
+	public boolean isChecked() {
+		return checked;
+	}
+
+	/**
+	 * Setter method for the checked boolean.
+	 */
+	public void setChecked(boolean checked) {
+		this.checked = checked;
 	}
 
 }
