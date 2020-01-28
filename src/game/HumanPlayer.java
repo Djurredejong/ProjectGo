@@ -26,10 +26,8 @@ public class HumanPlayer extends Player {
 
 	/**
 	 * Determine a move on the board: Let the player decide on where to place the
-	 * next stone and then - check if the intersection is valid (exists and
-	 * unoccupied) (if not, let the player decide again) - TODO check if the move
-	 * would recreate a previous board situation (if so, let the player decide
-	 * again)
+	 * next stone and then check if the intersection is valid (exists and
+	 * unoccupied). If not, let the player decide again.
 	 */
 	public int determineMove(Board board) throws ExitProgram {
 		System.out.println("Do you want to pass? (if yes, type y)");
@@ -53,6 +51,8 @@ public class HumanPlayer extends Player {
 			intersec = row * board.getBoardSize() + col;
 		}
 
+		// TODO Check wheter the move would recreate a previous board situation (if so,
+		// let the player decide again)
 		return row * board.getBoardSize() + col;
 	}
 

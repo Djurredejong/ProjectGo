@@ -7,17 +7,11 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 
 import exceptions.ExitProgram;
-import exceptions.ServerUnavailableException;
 
 /**
  * Client TUI for user input and user messages.
  */
 public class ClientTUI {
-
-	/**
-	 * The client for whom this is the view.
-	 */
-	private Client client;
 
 	/**
 	 * The PrintWriter to write messages to.
@@ -34,57 +28,9 @@ public class ClientTUI {
 	 * in the console (standard output). Input for this view will come from the user
 	 * keyboard (standard input).
 	 */
-	public ClientTUI(Client client) {
-		this.client = client;
+	public ClientTUI() {
 		console = new PrintWriter(System.out, true);
 		in = new BufferedReader(new InputStreamReader(System.in));
-	}
-
-	/**
-	 * Ask for user input continuously and handles that input by calling the
-	 * handleUserInput(userInput) method. If an ExitProgram exception is thrown,
-	 * stop asking for input, send an exit message to the server according to the
-	 * protocol and close the connection.
-	 */
-	public void start() throws ServerUnavailableException, ExitProgram {
-		String userInput;
-		try {
-			while (true) {
-				userInput = in.readLine();
-				handleUserInput(userInput);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new ExitProgram(e + ": Cannot read user input.");
-		} catch (ExitProgram exc) {
-			client.sendExit();
-		}
-	}
-
-	/**
-	 * The user/client should be able to type one of the following three commands: p
-	 * or pass to pass (ignore case), q or quit to quit (ignore case), an integer to
-	 * define the intersection on the board for his next move.
-	 */
-	public void handleUserInput(String input) throws ExitProgram, ServerUnavailableException {
-		showMessage("Please pick an intersection for your next stone, pass (p) or quit (q).");
-
-		if (input.equalsIgnoreCase("q") || input.equalsIgnoreCase("quit")) {
-			client.sendExit();
-		}
-
-		else if (input.equalsIgnoreCase("p") || input.equalsIgnoreCase("pass")) {
-			client.doPass();
-		} else if (isInteger(input)) {
-			int intersection = Integer.parseInt(input);
-			if (intersection < 0 || intersection > (client.getBoardSize()) - 1) {
-				client.doMove(intersection);
-			} else {
-				showMessage("The integer you typed does not represent an intersection");
-			}
-		} else {
-			showMessage("Please pick an intersection, type p to pass or q to quit");
-		}
 	}
 
 	/**
@@ -164,23 +110,4 @@ public class ClientTUI {
 		}
 	}
 
-	/**
-	 * Checks whether the provided String is parsable to an integer.
-	 */
-	private boolean isInteger(String s) {
-		if (s.isEmpty())
-			return false;
-		for (int i = 0; i < s.length(); i++) {
-			if (i == 0 && s.charAt(i) == '-') {
-				if (s.length() == 1)
-					return false;
-				else
-					continue;
-			}
-			if (Character.digit(s.charAt(i), 10) < 0) {
-				return false;
-			}
-		}
-		return true;
-	}
 }

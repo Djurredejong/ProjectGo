@@ -67,7 +67,7 @@ public class Client {
 	 * @throws ExitProgram
 	 */
 	public Client() {
-		view = new ClientTUI(this);
+		view = new ClientTUI();
 		try {
 			this.myName = view.getString("What should be your name/the name of your AI player?");
 			if (view.getBoolean("Do you want to start an AI player?(y/n)")) {
@@ -262,26 +262,6 @@ public class Client {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Checks if the move the user wants to do is valid. If so, sends this move to
-	 * the server. Then waits for and reads the response from the server.
-	 */
-	public void doMove(int intersection) throws ServerUnavailableException {
-		this.sendMessage(String.valueOf(ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + intersection));
-		String line = this.readLineFromServer();
-		view.showMessage("> " + line);
-	}
-
-	/**
-	 * Lets the server know this client wants to pass. Then waits for and reads the
-	 * response from the server.
-	 */
-	public void doPass() throws ServerUnavailableException {
-		this.sendMessage(String.valueOf(ProtocolMessages.PASS));
-		String line = this.readLineFromServer();
-		view.showMessage("> " + line);
 	}
 
 	/**
