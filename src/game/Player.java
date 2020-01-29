@@ -30,13 +30,13 @@ public abstract class Player {
 	/**
 	 * Makes a move on the board.
 	 */
-	public boolean makeMove(Board board) throws ExitProgram {
+	public int makeMove(Board board) throws ExitProgram {
 		int i = determineMove(board);
 		if (i == -1) {
-			return false;
+			return i;
 		} else {
 			board.putStone(i % board.getBoardSize(), i / board.getBoardSize(), this.mark);
-			return true;
+			return i;
 		}
 	}
 

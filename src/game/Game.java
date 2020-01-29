@@ -43,7 +43,7 @@ public class Game {
 		while (!gameOver) {
 			System.out.println();
 			System.out.println(players[current].getName() + ", it's your turn!");
-			if (players[current].makeMove(board)) {
+			if (players[current].makeMove(board) == -1) {
 				consecPass = 0;
 			} else {
 				consecPass++;

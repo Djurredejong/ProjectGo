@@ -66,17 +66,6 @@ public class Client {
 	 */
 	public Client() {
 		view = new ClientTUI();
-		this.player = new HumanPlayer(myName, mark);
-//		try {
-//			if (view.getBoolean("Do you want to start an AI player? (y/n)")) {
-//				this.player = new ComputerPlayer(myName, mark);
-//			} else {
-//				this.player = new HumanPlayer(myName, mark);
-//			}
-//		} catch (ExitProgram e) {
-//			view.showMessage(e + " I will now disconnect.");
-//			closeConnection();
-//		}
 	}
 
 	/**
@@ -97,7 +86,7 @@ public class Client {
 			this.board = new Board(this.boardSize, true);
 			while (true) {
 				this.handleGameplay();
-				in.readLine();
+				this.readLineFromServer();
 				// TODO process the response from the server on my move
 			}
 		} catch (ExitProgram | ServerUnavailableException | ProtocolException | IOException e) {
@@ -112,7 +101,7 @@ public class Client {
 	 * a move as response, which is then send back to the Server.
 	 */
 	private void handleGameplay() throws IOException, ProtocolException, ExitProgram, ServerUnavailableException {
-		String line = in.readLine();
+		String line = this.readLineFromServer();
 		String[] lineSplit = line.split(ProtocolMessages.DELIMITER);
 		if (lineSplit[0] == null || !(lineSplit[0].contentEquals(String.valueOf(ProtocolMessages.TURN))
 				|| lineSplit[0].contentEquals(String.valueOf(ProtocolMessages.END)))) {
@@ -125,9 +114,9 @@ public class Client {
 					int intersec = Integer.parseInt(lineSplit[2]);
 					board.putStone(board.getCol(intersec), board.getRow(intersec), mark.other());
 				}
-				boolean move = this.player.makeMove(board);
+				int move = this.player.makeMove(board);
 				// TODO give a user the ability to press Q to quit the game
-				if (move) {
+				if (move != -1) {
 					this.sendMessage(String.valueOf(ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + move));
 				} else {
 					this.sendMessage(
@@ -266,6 +255,17 @@ public class Client {
 					} else {
 						throw new ProtocolException("Error: server did not provide a valid color");
 					}
+					this.player = new HumanPlayer(myName, mark);
+//					try {
+//						if (view.getBoolean("Do you want to start an AI player? (y/n)")) {
+//							this.player = new ComputerPlayer(myName, mark);
+//						} else {
+//							this.player = new HumanPlayer(myName, mark);
+//						}
+//					} catch (ExitProgram e) {
+//						view.showMessage(e + " I will now disconnect.");
+//						closeConnection();
+//					}
 				}
 			}
 		}
@@ -289,7 +289,7 @@ public class Client {
 		try {
 			in.close();
 			out.close();
-			sock.close();
+			// sock.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

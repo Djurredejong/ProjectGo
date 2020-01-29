@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 //import java.net.SocketException;
 
+import exceptions.ExitProgram;
 import exceptions.ProtocolException;
 import game.Mark;
 import protocol.ProtocolMessages;
@@ -91,14 +92,12 @@ public class ClientHandler implements Runnable {
 						// if white, wait till it's white's turn
 					}
 				}
-				srv.view.showMessage(this.name + " should now make a move!");
+
 				this.sendTurn();
 				msg = in.readLine();
 				while (true) {
 					srv.view.showMessage(("> [" + name + "] Incoming: " + msg));
 					handleCommand(msg);
-					out.newLine();
-					out.flush();
 					if (this.mark == Mark.W) {
 						while (!whiteTurn) {
 							// wait till it's white's turn again
@@ -112,10 +111,8 @@ public class ClientHandler implements Runnable {
 				}
 			}
 
-			catch (ProtocolException e) {
+			catch (ProtocolException | NumberFormatException | ExitProgram e) {
 				// in case of a ProtocolException, disconnect the client
-				out.write(String.valueOf(ProtocolMessages.INVALID + ProtocolMessages.DELIMITER
-						+ "You did not adhere to the protocol, goodbye!"));
 				System.out.println(name + " did not adhere to the protocol, disconnect " + name);
 				shutdown();
 			}
@@ -123,6 +120,38 @@ public class ClientHandler implements Runnable {
 			// this happens purposely
 			System.out.println("Shutting down. Goodbye!");
 			shutdown();
+		}
+	}
+
+	/**
+	 * Handles commands received from the client by calling the according methods
+	 * via the Server.
+	 * 
+	 * @throws ExitProgram
+	 * @throws NumberFormatException
+	 */
+	private void handleCommand(String msg) throws IOException, ProtocolException, NumberFormatException, ExitProgram {
+
+		if (msg.charAt(0) == ProtocolMessages.MOVE) {
+			String[] msgSplit = msg.split(ProtocolMessages.DELIMITER);
+			if (msgSplit.length > 1 && msgSplit[1] != null && isInteger(msgSplit[1])) {
+				this.srv.doMove(this.mark, Integer.parseInt(msgSplit[1]));
+				out.write(String.valueOf(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + ProtocolMessages.VALID
+						+ ProtocolMessages.DELIMITER + srv.getBoard()));
+			} else if (msgSplit.length > 1 && msgSplit[1] != null
+					&& msgSplit[1].contentEquals(String.valueOf(ProtocolMessages.PASS))) {
+				out.write(String.valueOf(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + ProtocolMessages.VALID
+						+ ProtocolMessages.DELIMITER + srv.getBoard()));
+			} else {
+				throw new ProtocolException("You did not send me a move!");
+			}
+			out.newLine();
+			out.flush();
+		}
+
+		// apparently, the received message does not correspond to the protocol
+		else {
+			throw new ProtocolException("You did not send me a valid command!");
 		}
 	}
 
@@ -145,36 +174,9 @@ public class ClientHandler implements Runnable {
 			out.write(String.valueOf(ProtocolMessages.TURN + ProtocolMessages.DELIMITER + srv.getBoard().toString()
 					+ ProtocolMessages.DELIMITER + ClientHandler.lastMove));
 		}
-	}
-
-	/**
-	 * Handles commands received from the client by calling the according methods
-	 * via the Server.
-	 */
-	private void handleCommand(String msg) throws IOException, ProtocolException {
-
-		if (msg.charAt(0) == ProtocolMessages.MOVE) {
-			String[] msgSplit = msg.split(ProtocolMessages.DELIMITER);
-			if (msgSplit.length > 1 && msgSplit[1] != null && isInteger(msgSplit[1])) {
-				// if
-				// (srv.getGames().get(srv.getGames().indexOf(this.game)).getBoard().isValidMove(Integer.parseInt(msgSplit[1])))
-				// {
-				// if (this.game.getBoard().isValidMove(Integer.parseInt(msgSplit[1]))) {
-				this.srv.doMove(this, Integer.parseInt(msgSplit[1]));
-				out.write(String.valueOf(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + ProtocolMessages.VALID
-						+ ProtocolMessages.DELIMITER + srv.getBoard()));
-				// } else {
-				// throw new ProtocolException("You did not send me a valid move!");
-				// }
-			} else {
-				throw new ProtocolException("You did not send me a move!");
-			}
-		}
-
-		// apparently, the received message does not correspond to the protocol
-		else {
-			throw new ProtocolException("You did not send me a valid command!");
-		}
+		out.newLine();
+		out.flush();
+		srv.view.showMessage(this.name + " should now make a move!");
 	}
 
 	/**

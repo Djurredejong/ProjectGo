@@ -156,14 +156,11 @@ public class Server implements Runnable {
 	/**
 	 * Called by a ClientHandler when the player it represents wants to do this
 	 * move; does the provided move on the board.
+	 * 
+	 * @throws ExitProgram
 	 */
-	public synchronized String doMove(ClientHandler handler, int move) {
-		// if (handler.getColor() == ProtocolMessages.BLACK) {
-		// handler.getGame().move(move);
-		// handler.getGame().setCurrent(handler.getGame().getCurrent() % 2);
-		return "move done";
-		// }
-
+	public synchronized void doMove(Mark mark, int move) throws ExitProgram {
+		board.putStone(move % this.boardSize, move / this.boardSize, mark);
 	}
 
 	/**
