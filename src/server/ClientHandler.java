@@ -93,11 +93,12 @@ public class ClientHandler implements Runnable {
 					}
 				}
 
-				this.sendTurn();
-				msg = in.readLine();
 				while (true) {
+					this.sendTurn();
+					msg = in.readLine();
 					srv.view.showMessage(("> [" + name + "] Incoming: " + msg));
 					handleCommand(msg);
+					ClientHandler.whiteTurn = !ClientHandler.whiteTurn;
 					if (this.mark == Mark.W) {
 						while (!whiteTurn) {
 							// wait till it's white's turn again
@@ -107,7 +108,6 @@ public class ClientHandler implements Runnable {
 							// wait till it's black's turn again
 						}
 					}
-					msg = in.readLine();
 				}
 			}
 
@@ -124,11 +124,9 @@ public class ClientHandler implements Runnable {
 	}
 
 	/**
-	 * Handles commands received from the client by calling the according methods
-	 * via the Server.
-	 * 
-	 * @throws ExitProgram
-	 * @throws NumberFormatException
+	 * Handles commands received from the client by calling the doMove method via
+	 * the Server or, in the case of a pass, doing nothing and then writing back
+	 * according to the protocol.
 	 */
 	private void handleCommand(String msg) throws IOException, ProtocolException, NumberFormatException, ExitProgram {
 

@@ -96,7 +96,6 @@ public class Server implements Runnable {
 						clients.get(nextClientNo - 2).setTwoPlayers(true);
 						clients.get(nextClientNo - 1).setTwoPlayers(true);
 					}
-					// game.startPlay();
 				}
 
 			} catch (ExitProgram ep) {
