@@ -154,14 +154,6 @@ public class Intersec {
 	}
 
 	/**
-	 * Useful for debugging.
-	 */
-	@Override
-	public String toString() {
-		return (mark + ": " + col + ", " + row);
-	}
-
-	/**
 	 * This stone belongs to the area of black when this method is called.
 	 */
 	public void setBlackArea(boolean bool) {
@@ -206,6 +198,15 @@ public class Intersec {
 	 */
 	public void setChecked(boolean checked) {
 		this.checked = checked;
+	}
+
+	/**
+	 * Upper solution needed for communication. Lower solution useful for debugging.
+	 */
+	@Override
+	public String toString() {
+		return String.valueOf(mark);
+		// return (mark + ": " + col + ", " + row);
 	}
 
 }

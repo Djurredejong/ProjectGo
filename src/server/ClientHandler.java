@@ -9,6 +9,7 @@ import java.net.Socket;
 //import java.net.SocketException;
 
 import exceptions.ProtocolException;
+import game.Mark;
 import protocol.ProtocolMessages;
 
 /**
@@ -30,6 +31,11 @@ public class ClientHandler implements Runnable {
 	private String name;
 
 	/**
+	 * Mark (colour) of the Client's player represented by this ClientHandler.
+	 */
+	private Mark mark;
+
+	/**
 	 * Set to true as soon as two players are connected to the game that this
 	 * ClientHandler plays on.
 	 */
@@ -37,14 +43,16 @@ public class ClientHandler implements Runnable {
 
 	/**
 	 * When true, the player with colour white should play; when false, the player
-	 * with colour black should play.
+	 * with colour black should play. TODO other solution for determining whose turn
+	 * it is, so that more games can be played simultaneously.
 	 */
-	volatile boolean whiteTurn = false;
+	volatile static private boolean whiteTurn;
 
 	/**
-	 * Colour of the Client's player represented by this ClientHandler.
+	 * The last move of the opponent player. In the beginning and after a pass, it's
+	 * value should be -1.
 	 */
-	private char color;
+	volatile static private int lastMove;
 
 	/**
 	 * Constructs a new ClientHandler. Opens the In- and OutputStreams.
@@ -77,27 +85,65 @@ public class ClientHandler implements Runnable {
 				}
 				sendStart();
 				String msg;
+				if (this.mark == Mark.W) {
+					while (!whiteTurn) {
+						// black should make the first move
+						// if white, wait till it's white's turn
+					}
+				}
+				srv.view.showMessage(this.name + " should now make a move!");
+				this.sendTurn();
 				msg = in.readLine();
-				while (msg != null) {
-					System.out.println("> [" + name + "] Incoming: " + msg);
+				while (true) {
+					srv.view.showMessage(("> [" + name + "] Incoming: " + msg));
 					handleCommand(msg);
 					out.newLine();
 					out.flush();
+					if (this.mark == Mark.W) {
+						while (!whiteTurn) {
+							// wait till it's white's turn again
+						}
+					} else if (this.mark == Mark.B) {
+						while (whiteTurn) {
+							// wait till it's black's turn again
+						}
+					}
 					msg = in.readLine();
 				}
-				System.out.println("Shutting down");
-				shutdown();
-			} catch (ProtocolException e) {
+			}
+
+			catch (ProtocolException e) {
 				// in case of a ProtocolException, disconnect the client
-				out.write(ProtocolMessages.INVALID + ProtocolMessages.DELIMITER
-						+ "You did not adhere to the protocol, goodbye!");
+				out.write(String.valueOf(ProtocolMessages.INVALID + ProtocolMessages.DELIMITER
+						+ "You did not adhere to the protocol, goodbye!"));
 				System.out.println(name + " did not adhere to the protocol, disconnect " + name);
 				shutdown();
 			}
 		} catch (IOException e) {
 			// this happens purposely
-			System.out.println("Goodbye!");
+			System.out.println("Shutting down. Goodbye!");
 			shutdown();
+		}
+	}
+
+	/**
+	 * Sends to a Client that it is his turn. If the opponent's last move was a
+	 * Pass, send this to the Client, if his last move was putting a stone on the
+	 * board, send the intersection, according to the protocol.
+	 */
+	public void sendTurn() throws IOException {
+		if (ClientHandler.lastMove == -1) {
+			srv.view.showMessage(
+					"Sending to " + this.name + ": " + String.valueOf(ProtocolMessages.TURN + ProtocolMessages.DELIMITER
+							+ srv.getBoard().toString() + ProtocolMessages.DELIMITER + ProtocolMessages.PASS));
+			out.write(String.valueOf(ProtocolMessages.TURN + ProtocolMessages.DELIMITER + srv.getBoard().toString()
+					+ ProtocolMessages.DELIMITER + ProtocolMessages.PASS));
+		} else {
+			srv.view.showMessage(
+					"Sending to " + this.name + ": " + String.valueOf(ProtocolMessages.TURN + ProtocolMessages.DELIMITER
+							+ srv.getBoard().toString() + ProtocolMessages.DELIMITER + ClientHandler.lastMove));
+			out.write(String.valueOf(ProtocolMessages.TURN + ProtocolMessages.DELIMITER + srv.getBoard().toString()
+					+ ProtocolMessages.DELIMITER + ClientHandler.lastMove));
 		}
 	}
 
@@ -115,8 +161,8 @@ public class ClientHandler implements Runnable {
 				// {
 				// if (this.game.getBoard().isValidMove(Integer.parseInt(msgSplit[1]))) {
 				this.srv.doMove(this, Integer.parseInt(msgSplit[1]));
-				out.write(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + ProtocolMessages.VALID
-						+ ProtocolMessages.DELIMITER + srv.getBoard());
+				out.write(String.valueOf(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + ProtocolMessages.VALID
+						+ ProtocolMessages.DELIMITER + srv.getBoard()));
 				// } else {
 				// throw new ProtocolException("You did not send me a valid move!");
 				// }
@@ -135,8 +181,10 @@ public class ClientHandler implements Runnable {
 	 * Send to the client that the game starts, according to the protocol
 	 */
 	public void sendStart() throws IOException {
-		out.write(ProtocolMessages.GAME + ProtocolMessages.DELIMITER + srv.getBoard() + ProtocolMessages.DELIMITER
-				+ this.color);
+		srv.view.showMessage("Sending to " + this.name + ": " + String.valueOf(ProtocolMessages.GAME
+				+ ProtocolMessages.DELIMITER + srv.getBoard().toString() + ProtocolMessages.DELIMITER + this.mark));
+		out.write(String.valueOf(ProtocolMessages.GAME + ProtocolMessages.DELIMITER + srv.getBoard().toString()
+				+ ProtocolMessages.DELIMITER + this.mark));
 		out.newLine();
 		out.flush();
 	}
@@ -148,8 +196,11 @@ public class ClientHandler implements Runnable {
 		String msg = in.readLine();
 		System.out.println("> [" + name + "] Incoming: " + msg);
 		if (msg.charAt(0) == ProtocolMessages.HANDSHAKE) {
-			out.write(ProtocolMessages.HANDSHAKE + ProtocolMessages.DELIMITER + "1.0" + ProtocolMessages.DELIMITER
-					+ "Welcome to this server that will let you play go.");
+			srv.view.showMessage("Sending to " + this.name + ": "
+					+ String.valueOf(ProtocolMessages.HANDSHAKE + ProtocolMessages.DELIMITER + "1.0"
+							+ ProtocolMessages.DELIMITER + "Welcome to this server that will let you play Go!"));
+			out.write((String.valueOf(ProtocolMessages.HANDSHAKE + ProtocolMessages.DELIMITER + "1.0"
+					+ ProtocolMessages.DELIMITER + "Welcome to this server that will let you play Go!")));
 			out.newLine();
 			out.flush();
 		} else {
@@ -188,23 +239,25 @@ public class ClientHandler implements Runnable {
 	}
 
 	/**
-	 * Setter method for the colour associated with this ClientHandler.
+	 * Setter method for the whiteTurn boolean, should initially be set to false.
 	 */
-	public void setColor(char color) {
-		this.color = color;
+	public void setWhiteTurn(boolean whiteTurn) {
+		ClientHandler.whiteTurn = whiteTurn;
 	}
 
 	/**
-	 * Return the colour associated with this ClientHandler as a String.
+	 * Setter method for the colour associated with this ClientHandler.
 	 */
-	public String colorString(char color) {
-		if (color == ProtocolMessages.BLACK) {
-			return "Black";
-		} else if (color == ProtocolMessages.WHITE) {
-			return "White";
-		} else {
-			return "No color!";
-		}
+	public void setMark(Mark mark) {
+		this.mark = mark;
+	}
+
+	/**
+	 * Sets the last move of the opponent player. The provided parameter should be a
+	 * number representing an intersection or -1 in case the opponent passed.
+	 */
+	public void setLastMove(int lastMove) {
+		ClientHandler.lastMove = lastMove;
 	}
 
 	/**

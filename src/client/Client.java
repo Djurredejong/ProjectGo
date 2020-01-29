@@ -13,7 +13,6 @@ import exceptions.ExitProgram;
 import exceptions.ProtocolException;
 import exceptions.ServerUnavailableException;
 import game.Board;
-import game.ComputerPlayer;
 import game.HumanPlayer;
 import game.Mark;
 import game.Player;
@@ -62,23 +61,22 @@ public class Client {
 	private Board board;
 
 	/**
-	 * Constructs a new Client. Initialises the view.
-	 * 
-	 * @throws ExitProgram
+	 * Constructs a new Client. Initialises the view. Starts a new ComputerPlayer if
+	 * the user chooses to do so, a HumanPlayer otherwise.
 	 */
 	public Client() {
 		view = new ClientTUI();
-		try {
-			this.myName = view.getString("What should be your name/the name of your AI player?");
-			if (view.getBoolean("Do you want to start an AI player?(y/n)")) {
-				this.player = new ComputerPlayer(myName, mark);
-			} else {
-				this.player = new HumanPlayer(myName, mark);
-			}
-		} catch (ExitProgram e) {
-			view.showMessage(e + " I will now disconnect.");
-			closeConnection();
-		}
+		this.player = new HumanPlayer(myName, mark);
+//		try {
+//			if (view.getBoolean("Do you want to start an AI player? (y/n)")) {
+//				this.player = new ComputerPlayer(myName, mark);
+//			} else {
+//				this.player = new HumanPlayer(myName, mark);
+//			}
+//		} catch (ExitProgram e) {
+//			view.showMessage(e + " I will now disconnect.");
+//			closeConnection();
+//		}
 	}
 
 	/**
@@ -154,15 +152,18 @@ public class Client {
 		out = null;
 		while (sock == null) {
 			// myName = view.getString("Please enter your name");
-			myName = "speler";
+			myName = "Joris";
+
 			// String host = String.valueOf(view.getIp());
+			// String host = view.getString("Please enter an IP address");
 			String host = "127.0.0.1";
 			// int port = view.getInt("Please enter a port number");
 			int port = 8888;
 
 			try {
 				InetAddress addr = InetAddress.getByName(host);
-				view.showMessage("Attempting to connect to " + addr + " :" + port + "...");
+				view.showMessage("Attempting to connect to " + addr + " on port " + port + "...");
+
 				sock = new Socket(addr, port);
 				in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 				out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
@@ -196,11 +197,12 @@ public class Client {
 	public String readLineFromServer() throws ServerUnavailableException {
 		if (in != null) {
 			try {
-				String answer = in.readLine();
-				if (answer == null) {
+				String msg = in.readLine();
+				view.showMessage(("> [Server] Incoming: " + msg));
+				if (msg == null) {
 					throw new ServerUnavailableException("Could not read from server.");
 				}
-				return answer;
+				return msg;
 			} catch (IOException e) {
 				throw new ServerUnavailableException("Could not read from server.");
 			}
@@ -210,7 +212,9 @@ public class Client {
 	}
 
 	/**
-	 * Handles the server-client handshake as described in the protocol.
+	 * Handles the server-client handshake as described in the protocol. Shows the
+	 * user via the TUI what the version of the protocol is and the (optional)
+	 * welcome message the server provided.
 	 */
 	public void handleHello() throws ServerUnavailableException, ProtocolException {
 		this.sendMessage(String.valueOf(ProtocolMessages.HANDSHAKE + ProtocolMessages.DELIMITER + "1.0"
@@ -235,6 +239,8 @@ public class Client {
 
 	/**
 	 * Waits for the server to start a new Game with this client and another one.
+	 * Updates the size of the board based on what the server sends. Shows the user
+	 * via the TUI what the size of the board and his colour will be.
 	 */
 	public void waitForStart() throws ServerUnavailableException, ProtocolException {
 		String line = this.readLineFromServer();
@@ -246,8 +252,9 @@ public class Client {
 				throw new ProtocolException("Error: server did not send the board");
 			} else {
 				view.showMessage("We will start a game.");
-				this.boardSize = lineSplit[1].length();
-				view.showMessage("The amount of intersections on the board will be : " + boardSize + ".");
+				this.boardSize = (int) Math.sqrt(lineSplit[1].length());
+				view.showMessage(
+						"The amount of intersections on the board will be : " + boardSize + " x " + boardSize + ".");
 				if (!(lineSplit.length > 2) || lineSplit[2] == null) {
 					throw new ProtocolException("Error: server did not provide a color");
 				} else {

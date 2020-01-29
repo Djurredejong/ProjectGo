@@ -1,7 +1,6 @@
 package server;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -9,7 +8,7 @@ import java.util.List;
 
 import exceptions.ExitProgram;
 import game.Board;
-import protocol.ProtocolMessages;
+import game.Mark;
 
 public class Server implements Runnable {
 
@@ -86,8 +85,12 @@ public class Server implements Runnable {
 						// two players have connected, start a new Game!
 						this.board = new Board(this.boardSize, false);
 						// give the ClientHandlers a colour, first player is always black
-						clients.get(nextClientNo - 2).setColor(ProtocolMessages.BLACK);
-						clients.get(nextClientNo - 1).setColor(ProtocolMessages.WHITE);
+						clients.get(nextClientNo - 2).setMark(Mark.B);
+						clients.get(nextClientNo - 1).setMark(Mark.W);
+						// the first move should be black's, let the ClientHandler's know this
+						// only one needs to be told this, since it's a static variable
+						clients.get(nextClientNo - 2).setWhiteTurn(false);
+						clients.get(nextClientNo - 2).setLastMove(-1);
 						// wake up the ClientHandlers that will play in the new game
 						// by setting the volatile boolean twoPlayer value to true
 						clients.get(nextClientNo - 2).setTwoPlayers(true);
@@ -131,7 +134,7 @@ public class Server implements Runnable {
 
 			try {
 				view.showMessage("Attempting to open a socket at 127.0.0.1 " + "on port " + port + "...");
-				ssock = new ServerSocket(port, 0, InetAddress.getByName("127.0.0.1"));
+				ssock = new ServerSocket(port);// , 0, InetAddress.getByName("127.0.0.1"));
 				view.showMessage("Server started at port " + port + ".");
 			} catch (IOException e) {
 				view.showMessage("ERROR: could not create a socket on 127.0.0.1 and port " + port + ".");
@@ -189,7 +192,7 @@ public class Server implements Runnable {
 	 */
 	public static void main(String[] args) {
 		Server server = new Server();
-		System.out.println("This Server will let you play Go. Starting...");
+		System.out.println("This Server will let you people Go. Starting...");
 		new Thread(server).start();
 	}
 
