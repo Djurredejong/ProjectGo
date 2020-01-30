@@ -283,7 +283,7 @@ public class Board {
 	 */
 	private void scoringWhite() {
 		for (int i = 0; i < intersecs.length; i++) {
-			if (intersecs[i].getMark() == Mark.B) {
+			if (intersecs[i].getMark() == Mark.W) {
 				whiteScore = whiteScore + 1;
 				for (Intersec neighbour : intersecs[i].getNeighbours()) {
 					areaWhite(neighbour);

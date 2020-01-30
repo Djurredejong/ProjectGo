@@ -336,7 +336,7 @@ class BoardTest {
 	}
 
 	/**
-	 * Tests whether the Ko rule is upheld.
+	 * Tests whether the Ko-rule is upheld.
 	 */
 	@Test
 	void testKo() throws Exception {
@@ -351,7 +351,7 @@ class BoardTest {
 	}
 
 	/**
-	 * Tests whether the Ko rule is upheld when suiciding without capturing.
+	 * Tests whether the Ko-rule is upheld when suiciding without capturing.
 	 */
 	@Test
 	void testSuicideKo() throws Exception {
@@ -368,7 +368,7 @@ class BoardTest {
 	}
 
 	/**
-	 * Tests whether the Ko rule is not upheld when suiciding with capturing.
+	 * Tests whether the Ko-rule is not upheld when suiciding with capturing.
 	 */
 	@Test
 	void testCaptureNoKo() throws Exception {
@@ -393,6 +393,7 @@ class BoardTest {
 				board.putStone(col, row, Mark.B);
 			}
 		}
+		board.putStone(3, 0, Mark.W);
 		assertFalse(board.determineWinner());
 	}
 
