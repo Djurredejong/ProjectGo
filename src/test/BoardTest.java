@@ -1,7 +1,6 @@
 package test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -381,20 +380,6 @@ class BoardTest {
 		assertEquals(Mark.W, board.intersecs[0].getMark());
 		assertEquals(Mark.U, board.intersecs[1].getMark());
 		assertEquals(Mark.U, board.intersecs[3].getMark());
-	}
-
-	/**
-	 * Tests whether the game ends and the scoring mechanism functions.
-	 */
-	@Test
-	void testScoring() throws Exception {
-		for (int row = 0; row < 4; row++) {
-			for (int col = 0; col < 4; col++) {
-				board.putStone(col, row, Mark.B);
-			}
-		}
-		board.putStone(3, 0, Mark.W);
-		assertFalse(board.determineWinner());
 	}
 
 }
