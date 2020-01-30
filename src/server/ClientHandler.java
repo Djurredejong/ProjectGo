@@ -56,6 +56,11 @@ public class ClientHandler implements Runnable {
 	volatile static private int lastMove;
 
 	/**
+	 * The amount of consecutive passes.
+	 */
+	volatile static private int noPasses;
+
+	/**
 	 * Constructs a new ClientHandler. Opens the In- and OutputStreams.
 	 */
 	public ClientHandler(Socket sock, Server srv, String name) {
@@ -134,12 +139,14 @@ public class ClientHandler implements Runnable {
 			String[] msgSplit = msg.split(ProtocolMessages.DELIMITER);
 			if (msgSplit.length > 1 && msgSplit[1] != null && isInteger(msgSplit[1])) {
 				ClientHandler.lastMove = Integer.parseInt(msgSplit[1]);
+				ClientHandler.noPasses = 0;
 				this.srv.doMove(this.mark, Integer.parseInt(msgSplit[1]));
 				out.write(String.valueOf(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + ProtocolMessages.VALID
 						+ ProtocolMessages.DELIMITER + srv.getBoard()));
 			} else if (msgSplit.length > 1 && msgSplit[1] != null
 					&& msgSplit[1].contentEquals(String.valueOf(ProtocolMessages.PASS))) {
 				ClientHandler.lastMove = -1;
+				ClientHandler.noPasses++;
 				out.write(String.valueOf(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + ProtocolMessages.VALID
 						+ ProtocolMessages.DELIMITER + srv.getBoard()));
 			} else {
@@ -260,6 +267,13 @@ public class ClientHandler implements Runnable {
 	 */
 	public void setLastMove(int lastMove) {
 		ClientHandler.lastMove = lastMove;
+	}
+
+	/**
+	 * Sets the number of consecutive passes.
+	 */
+	public static void setNoPasses(int noPasses) {
+		ClientHandler.noPasses = noPasses;
 	}
 
 	/**

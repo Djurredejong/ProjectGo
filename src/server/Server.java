@@ -94,6 +94,7 @@ public class Server implements Runnable {
 						// only one needs to be told this, since it's a static variable
 						clients.get(nextClientNo - 2).setWhiteTurn(false);
 						clients.get(nextClientNo - 2).setLastMove(-1);
+						clients.get(nextClientNo - 2).setNoPasses(0);
 						// wake up the ClientHandlers that will play in the new game
 						// by setting the volatile boolean twoPlayer value to true
 						clients.get(nextClientNo - 2).setTwoPlayers(true);
