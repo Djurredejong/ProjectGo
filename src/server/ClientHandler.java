@@ -133,6 +133,7 @@ public class ClientHandler implements Runnable {
 		if (msg.charAt(0) == ProtocolMessages.MOVE) {
 			String[] msgSplit = msg.split(ProtocolMessages.DELIMITER);
 			if (msgSplit.length > 1 && msgSplit[1] != null && isInteger(msgSplit[1])) {
+				ClientHandler.lastMove = Integer.parseInt(msgSplit[1]);
 				this.srv.doMove(this.mark, Integer.parseInt(msgSplit[1]));
 				out.write(String.valueOf(ProtocolMessages.RESULT + ProtocolMessages.DELIMITER + ProtocolMessages.VALID
 						+ ProtocolMessages.DELIMITER + srv.getBoard()));
