@@ -2,10 +2,14 @@ package game;
 
 import exceptions.ExitProgram;
 
+/**
+ * Constructs a computer player, which has a certain strategy - this one always
+ * passes.
+ */
 public class ComputerPlayer extends Player {
 
 	/**
-	 * Create a new human player.
+	 * Create a new AI player.
 	 */
 	public ComputerPlayer(String name, Mark mark) {
 		super(name, mark);

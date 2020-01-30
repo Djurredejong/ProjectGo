@@ -7,6 +7,9 @@ import com.nedap.go.gui.GoGUIIntegrator;
 
 import exceptions.ExitProgram;
 
+/**
+ * The board on which a game of Go is played.
+ */
 public class Board {
 
 	/**
@@ -347,6 +350,13 @@ public class Board {
 		} else {
 			this.boardSituations.add(boardSituation);
 		}
+	}
+
+	/**
+	 * Getter method for the GUI. Useful for quitting a game.
+	 */
+	public GoGUIIntegrator getGUI() {
+		return g;
 	}
 
 	/**

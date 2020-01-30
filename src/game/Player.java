@@ -2,6 +2,9 @@ package game;
 
 import exceptions.ExitProgram;
 
+/**
+ * Abstract class to create players from.
+ */
 public abstract class Player {
 
 	/**

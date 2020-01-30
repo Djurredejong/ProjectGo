@@ -10,6 +10,9 @@ import exceptions.ExitProgram;
 import game.Board;
 import game.Mark;
 
+/**
+ * A Server that lets connecting Clients play a game of Go against one another.
+ */
 public class Server implements Runnable {
 
 	/**
@@ -121,9 +124,9 @@ public class Server implements Runnable {
 	 * ExitProgram exception is thrown or a new port is entered.
 	 */
 	public void setup() throws ExitProgram {
-		// boardSize = view.getInt("What should be the board size for the games played
-		// on this Server?");
-		boardSize = 4;
+		boardSize = view.getInt(
+				"What should be the board size for the games played on this Server? By board size we mean the amount of intersections in one dimension.");
+
 		view.showMessage("The board size is: " + boardSize + " x " + boardSize + ", let's see who wants to play!");
 
 		ssock = null;

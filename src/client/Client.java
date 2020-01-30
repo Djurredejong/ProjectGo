@@ -13,6 +13,7 @@ import exceptions.ExitProgram;
 import exceptions.ProtocolException;
 import exceptions.ServerUnavailableException;
 import game.Board;
+import game.ComputerPlayer;
 import game.HumanPlayer;
 import game.Mark;
 import game.Player;
@@ -229,7 +230,8 @@ public class Client {
 	/**
 	 * Waits for the server to start a new Game with this client and another one.
 	 * Updates the size of the board based on what the server sends. Shows the user
-	 * via the TUI what the size of the board and his colour will be.
+	 * via the TUI what the size of the board and his colour will be. Let's the user
+	 * decide on whether he wants to play himself or create a computer player.
 	 */
 	public void waitForStart() throws ServerUnavailableException, ProtocolException {
 		String line = this.readLineFromServer();
@@ -255,17 +257,16 @@ public class Client {
 					} else {
 						throw new ProtocolException("Error: server did not provide a valid color");
 					}
-					this.player = new HumanPlayer(myName, mark);
-//					try {
-//						if (view.getBoolean("Do you want to start an AI player? (y/n)")) {
-//							this.player = new ComputerPlayer(myName, mark);
-//						} else {
-//							this.player = new HumanPlayer(myName, mark);
-//						}
-//					} catch (ExitProgram e) {
-//						view.showMessage(e + " I will now disconnect.");
-//						closeConnection();
-//					}
+					try {
+						if (view.getBoolean("Do you want to start an AI player? (y/n)")) {
+							this.player = new ComputerPlayer(myName, mark);
+						} else {
+							this.player = new HumanPlayer(myName, mark);
+						}
+					} catch (ExitProgram e) {
+						view.showMessage(e + " I will now disconnect.");
+						closeConnection();
+					}
 				}
 			}
 		}

@@ -4,15 +4,13 @@ import java.util.Scanner;
 
 import exceptions.ExitProgram;
 
+/**
+ * Constructs a human player, which lets the user decide on the moves to make.
+ */
 public class HumanPlayer extends Player {
 
 	/**
-	 * The name of this player
-	 */
-	private String name;
-
-	/**
-	 * Scanner for input, TODO replace by input stream from socket
+	 * Scanner for input, TODO replace by Reader from Client.
 	 */
 	Scanner in = new Scanner(System.in);
 
@@ -21,7 +19,6 @@ public class HumanPlayer extends Player {
 	 */
 	public HumanPlayer(String name, Mark mark) {
 		super(name, mark);
-		this.name = name;
 	}
 
 	/**

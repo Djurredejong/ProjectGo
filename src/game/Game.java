@@ -2,8 +2,9 @@ package game;
 
 import exceptions.ExitProgram;
 
-//import server.ClientHandler;
-
+/**
+ * Starts a game of Go with two players on this computer.
+ */
 public class Game {
 
 	/**
@@ -37,30 +38,36 @@ public class Game {
 	 * As long as the game has not ended, players make a move one after the other.
 	 * If there are two consecutive passes in a row, the game ends.
 	 */
-	public void startPlay() throws ExitProgram {
+	public void startPlay() {
 		boolean gameOver = false;
 		int consecPass = 0;
-		while (!gameOver) {
-			System.out.println();
-			System.out.println(players[current].getName() + ", it's your turn!");
-			if (players[current].makeMove(board) == -1) {
-				consecPass = 0;
-			} else {
-				consecPass++;
+		try {
+			while (!gameOver) {
+				System.out.println();
+				System.out.println(players[current].getName() + ", it's your turn!");
+				if (players[current].makeMove(board) == -1) {
+					consecPass++;
+					System.out.println(players[current].getName() + " has passed.");
+				} else {
+					consecPass = 0;
+				}
+				if (consecPass == 2) {
+					gameOver = true;
+				} else {
+					gameOver = board.gameOver();
+				}
+				current++;
+				current = current % 2;
 			}
-			if (consecPass == 2) {
-				gameOver = true;
+			System.out.println("Going to count the score.");
+			if (board.determineWinner()) {
+				System.out.println("White has won!");
 			} else {
-				gameOver = board.gameOver();
+				System.out.println("Black has won!");
 			}
-			current++;
-			current = current % 2;
-		}
-		System.out.println("going to count the score!");
-		if (board.determineWinner()) {
-			System.out.println("White has won!");
-		} else {
-			System.out.println("Black has won!");
+		} catch (ExitProgram e) {
+			System.out.println("Goodbye!");
+			board.getGUI().stopGUI();
 		}
 	}
 
