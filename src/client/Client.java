@@ -141,13 +141,12 @@ public class Client {
 		in = null;
 		out = null;
 		while (sock == null) {
-			// myName = view.getString("Please enter your name");
-			myName = "Joris";
+//			myName = view.getString("Please enter your name");
+//			String host = view.getString("Please enter an IP address");
+//			int port = view.getInt("Please enter a port number");
 
-			// String host = String.valueOf(view.getIp());
-			// String host = view.getString("Please enter an IP address");
+			myName = "Joris";
 			String host = "127.0.0.1";
-			// int port = view.getInt("Please enter a port number");
 			int port = 8888;
 
 			try {
