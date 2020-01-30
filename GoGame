@@ -9,4 +9,4 @@ ProjectGo.jar\
 :./lib/javafx-sdk-11.0.5/lib/javafx.controls.jar\
 :./lib/javafx-sdk-11.0.5/lib/javafx.base.jar\
 :./lib/goGui/gui-1.1.jar\
-game.GoGame
+ game.GoGame
