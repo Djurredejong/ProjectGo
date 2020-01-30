@@ -1,1 +1,1 @@
-Als je een potje Go wilt spelen tegen de computer (die enkel zal passen) of tegen een andere speler op één computer, dan kun je de class GoGame runnen en de instructies in de console volgen. Helaas werkt het bepalen van de score aan het einde van een spel nog niet.
+
